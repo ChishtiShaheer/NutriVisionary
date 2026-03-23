@@ -5,6 +5,7 @@
     android:layout_height="match_parent">
 
     <LinearLayout
+        android:id="@+id/splashContainer"
         android:orientation="vertical"
         android:gravity="center"
         android:layout_centerInParent="true"
@@ -12,16 +13,19 @@
         android:layout_height="wrap_content">
 
         <ImageView
-            android:src="@drawable/ic_launcher_foreground"
+            android:id="@+id/logo"
+            android:src="@mipmap/ic_launcher"
             android:layout_width="120dp"
             android:layout_height="120dp"/>
 
         <TextView
-            android:text="@string/splash_text"
-            android:textSize="24sp"
+            android:id="@+id/appName"
+            android:text="NutriVisionary"
+            android:textSize="26sp"
             android:textStyle="bold"
             android:textColor="@color/white"
-            android:layout_marginTop="20dp"
+            android:layout_marginTop="16dp"
+            android:alpha="0"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"/>
 
