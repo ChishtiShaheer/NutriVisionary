@@ -12,6 +12,24 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.NutriVisionary">
         <activity
+            android:name=".SettingsActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ProgressAnalyticsActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ChatbotActivity"
+            android:exported="false" />
+        <activity
+            android:name=".MealPlannerActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ScanFoodActivity"
+            android:exported="false" />
+        <activity
+            android:name=".HomeDashboardActivity"
+            android:exported="false" />
+        <activity
             android:name=".ProfileSetupActivity"
             android:exported="false" />
         <activity
