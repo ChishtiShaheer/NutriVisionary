@@ -12,7 +12,16 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.NutriVisionary">
         <activity
-            android:name=".MainActivity"
+            android:name=".ProfileSetupActivity"
+            android:exported="false" />
+        <activity
+            android:name=".SignupActivity"
+            android:exported="false" />
+        <activity
+            android:name=".LoginActivity"
+            android:exported="false" />
+        <activity
+            android:name=".SplashScreenActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
