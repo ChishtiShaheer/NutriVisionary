@@ -3,6 +3,11 @@
         <item name="colorPrimary">@color/primaryBlue</item>
         <item name="colorPrimaryVariant">@color/primaryBlue</item>
         <item name="colorOnPrimary">@color/white</item>
-        <item name="android:statusBarColor">@color/primaryBlue</item>
+        <item name="android:statusBarColor">#F5F7FA</item>
+        <item name="android:windowLightStatusBar">true</item>
+    </style>
+
+    <style name="CircleImage">
+        <item name="cornerSize">50%</item>
     </style>
 </resources>

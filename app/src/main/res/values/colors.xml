@@ -6,4 +6,16 @@
     <color name="darkText">#212121</color>
     <color name="grayText">#757575</color>
     <color name="cardBackground">#F8F9FB</color>
+
+    <!-- Macro Colors -->
+    <color name="macroProtein">#4CAF50</color> <!-- Green -->
+    <color name="macroCarbs">#FFC107</color>    <!-- Yellow -->
+    <color name="macroFat">#F44336</color>      <!-- Red -->
+
+    <color name="neonGreen">#00E676</color>
+    <color name="neonYellow">#FFEA00</color>
+    <color name="neonRed">#FF1744</color>
+    <color name="neonBlue">#00E5FF</color>
+    <color name="neonPurple">#D500F9</color>
+    <color name="darkBackground">#0F172A</color>
 </resources>
