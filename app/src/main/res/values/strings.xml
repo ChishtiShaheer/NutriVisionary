@@ -101,4 +101,23 @@
     <string name="goal_gain">Gain Muscle</string>
     <string name="upload_photo">Upload Photo</string>
     <string name="complete_setup">Finish Setup</string>
+
+    <!-- Settings Strings -->
+    <string name="settings_title">Settings</string>
+    <string name="account_category">Account</string>
+    <string name="edit_profile">Edit Profile</string>
+    <string name="change_password">Change Password</string>
+    <string name="notifications_category">Notifications</string>
+    <string name="push_notifications">Push Notifications</string>
+    <string name="meal_reminders">Meal Reminders</string>
+    <string name="water_reminders">Water Reminders</string>
+    <string name="preferences_category">Preferences</string>
+    <string name="unit_system">Unit System (Metric/Imperial)</string>
+    <string name="dark_mode">Dark Mode</string>
+    <string name="support_category">Support &amp; About</string>
+    <string name="help_center">Help Center</string>
+    <string name="privacy_policy">Privacy Policy</string>
+    <string name="terms_service">Terms of Service</string>
+    <string name="app_version">Version 1.0.0</string>
+    <string name="logout">Logout</string>
 </resources>
