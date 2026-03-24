@@ -57,4 +57,26 @@
     <string name="legend_less">Less</string>
     <string name="legend_mid">Mid</string>
     <string name="legend_hit">Hit</string>
+
+    <!-- Meal Architect Strings -->
+    <string name="meal_blueprint">The Blueprint</string>
+    <string name="active_goal_label">Active Goal</string>
+    <string name="select_goal">Select your goal</string>
+    <string name="change_goal">Change</string>
+    <string name="target_kcal_label">Target Calories</string>
+    <string name="kcal_suffix"> kcal</string>
+    <string name="breakfast">Breakfast</string>
+    <string name="lunch">Lunch</string>
+    <string name="dinner">Dinner</string>
+    <string name="snacks">Snacks</string>
+    <string name="add_food">+ Add Food</string>
+    <string name="magic_card_title">AI Diet Architect</string>
+    <string name="magic_card_desc">Generate a personalized meal plan in seconds.</string>
+    <string name="generate_plan">Generate AI Plan</string>
+    <string name="chip_vegan">Vegan</string>
+    <string name="chip_keto">Keto</string>
+    <string name="chip_high_protein">High Protein</string>
+    <string name="chip_budget">Budget Friendly</string>
+    <string name="chip_gluten_free">Gluten-Free</string>
+    <string name="remaining_calories">Remaining</string>
 </resources>
