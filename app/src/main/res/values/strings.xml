@@ -11,8 +11,8 @@
     <string name="emailHint2">Email</string>
     <string name="passwordHint2">Password</string>
     <string name="signUpBtn">Sign Up</string>
-    <string name="good_evening">Good Evening👋</string>
-    <string name="user_name">ALi Aznawar</string>
+    <string name="good_evening">Good Evening 👋</string>
+    <string name="user_name">Alex Johnson</string>
     <string name="settings_desc">Settings</string>
     <string name="calories_left">1400</string>
     <string name="kcal_left_label">kcal left</string>
@@ -38,4 +38,23 @@
     <string name="nav_meals">Meals</string>
     <string name="nav_ai">AI Assistant</string>
     <string name="nav_progress">Progress</string>
+
+    <!-- Analytics Strings -->
+    <string name="analytics_title">Progress Analytics</string>
+    <string name="weight_trend">Weight Trend</string>
+    <string name="avg_weight">72.4 kg</string>
+    <string name="weight_diff">-1.2 kg this week</string>
+    <string name="week">Week</string>
+    <string name="month">Month</string>
+    <string name="year">Year</string>
+    <string name="avg_calories_label">Avg Calories</string>
+    <string name="avg_calories_value">1,840</string>
+    <string name="streak_label">Streak</string>
+    <string name="streak_value">14 Days</string>
+    <string name="goal_progress_label">Goal Progress</string>
+    <string name="goal_progress_value">82%</string>
+    <string name="adherence_heatmap_title">Adherence Heatmap</string>
+    <string name="legend_less">Less</string>
+    <string name="legend_mid">Mid</string>
+    <string name="legend_hit">Hit</string>
 </resources>
