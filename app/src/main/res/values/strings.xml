@@ -79,4 +79,26 @@
     <string name="chip_budget">Budget Friendly</string>
     <string name="chip_gluten_free">Gluten-Free</string>
     <string name="remaining_calories">Remaining</string>
+
+    <!-- Profile Setup Strings -->
+    <string name="profile_setup_title">Complete Your Profile</string>
+    <string name="profile_setup_subtitle">Help us tailor your nutrition journey.</string>
+    <string name="personal_info">Personal Information</string>
+    <string name="body_stats">Body Metrics</string>
+    <string name="lifestyle_goals">Lifestyle &amp; Goals</string>
+    <string name="gender_male">Male</string>
+    <string name="gender_female">Female</string>
+    <string name="gender_other">Other</string>
+    <string name="age_hint">Age</string>
+    <string name="weight_hint">Weight (kg)</string>
+    <string name="height_hint">Height (cm)</string>
+    <string name="activity_sedentary">Sedentary</string>
+    <string name="activity_moderate">Moderate</string>
+    <string name="activity_active">Active</string>
+    <string name="activity_athlete">Athlete</string>
+    <string name="goal_lose">Lose Weight</string>
+    <string name="goal_maintain">Maintain</string>
+    <string name="goal_gain">Gain Muscle</string>
+    <string name="upload_photo">Upload Photo</string>
+    <string name="complete_setup">Finish Setup</string>
 </resources>

@@ -7,7 +7,7 @@
         <item name="android:windowLightStatusBar">true</item>
     </style>
 
-    <style name="CircleImage">
+    <style name="CircleImageView">
         <item name="cornerSize">50%</item>
     </style>
 </resources>
