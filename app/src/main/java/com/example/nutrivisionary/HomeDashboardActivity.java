@@ -1,20 +1,31 @@
 package com.example.nutrivisionary;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 public class HomeDashboardActivity extends AppCompatActivity {
 
-    ImageView navHome, navScan, navMeals, navAI, navProgress;
-    ImageView settingsIcon, profileIcon;
+    private ImageView navHome, navScan, navMeals, navAI, navProgress;
+    private ImageView settingsIcon, profileIcon;
+    private TextView tvUserName;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home_dashboard);
+
+        tvUserName = findViewById(R.id.tvUserName);
+
+        // Fetch user name from SharedPreferences
+        SharedPreferences sharedPref = getSharedPreferences("NutriPrefs", Context.MODE_PRIVATE);
+        String userName = sharedPref.getString("userName", "User");
+        tvUserName.setText(userName);
 
         // Top icons
         settingsIcon = findViewById(R.id.settingsIcon);
