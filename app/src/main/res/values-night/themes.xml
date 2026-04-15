@@ -1,9 +1,23 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <style name="Theme.NutriVisionary" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <!-- Main background color -->
+        <item name="android:windowBackground">@color/darkBackground</item>
+
+        <!-- Primary colors -->
         <item name="colorPrimary">@color/primaryBlue</item>
-        <item name="colorPrimaryVariant">@color/primaryBlue</item>
+        <item name="colorPrimaryVariant">@color/navyBlue</item>
         <item name="colorOnPrimary">@color/white</item>
+
+        <!-- Secondary/Background colors -->
+        <item name="colorSurface">#1E293B</item>
+        <item name="colorOnSurface">@color/white</item>
+        <item name="android:colorBackground">@color/darkBackground</item>
+
+        <!-- Status Bar -->
         <item name="android:statusBarColor">@color/darkBackground</item>
         <item name="android:windowLightStatusBar">false</item>
+
+        <!-- Custom styles -->
+        <item name="circleImageViewStyle">@style/CircleImageView</item>
     </style>
 </resources>

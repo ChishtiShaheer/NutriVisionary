@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Backgrounds -->
+    <color name="white">#121212</color> <!-- Main background in dark mode -->
+    <color name="offWhite">#000000</color> <!-- Darker background -->
+    <color name="darkBackground">#121212</color>
+    <color name="cardBackground">#1E1E1E</color>
+    <color name="iceBlue">#1E293B</color>
+    <color name="softBlueGradientStart">#1E293B</color>
+
+    <!-- Text -->
+    <color name="darkText">#F8FAFC</color> <!-- Primary text -->
+    <color name="grayText">#94A3B8</color> <!-- Secondary text -->
+    <color name="slateGray">#94A3B8</color>
+    <color name="navyBlue">#F1F5F9</color>
+
+    <!-- Strokes and Dividers -->
+    <color name="mealStroke">#334155</color>
+    <color name="glassStroke">#334155</color>
+
+    <!-- UI Components -->
+    <color name="toggleBackground">#1E293B</color>
+    <color name="chip_unselected_bg">#1E293B</color>
+    <color name="chip_background_color">#1E293B</color>
+</resources>

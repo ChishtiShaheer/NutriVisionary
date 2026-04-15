@@ -3,14 +3,14 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F5F7FA"
+    android:background="?android:attr/colorBackground"
     android:orientation="vertical">
 
     <!-- TOOLBAR -->
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="64dp"
-        android:background="@color/white"
+        android:background="?attr/colorSurface"
         android:paddingHorizontal="16dp">
 
         <ImageView
@@ -61,6 +61,7 @@
                 android:layout_marginTop="12dp"
                 app:cardCornerRadius="16dp"
                 app:cardElevation="0dp"
+                app:cardBackgroundColor="?attr/colorSurface"
                 app:strokeColor="@color/mealStroke"
                 app:strokeWidth="1dp">
 
@@ -158,6 +159,7 @@
                 android:layout_marginTop="12dp"
                 app:cardCornerRadius="16dp"
                 app:cardElevation="0dp"
+                app:cardBackgroundColor="?attr/colorSurface"
                 app:strokeColor="@color/mealStroke"
                 app:strokeWidth="1dp">
 
@@ -304,6 +306,7 @@
                 android:layout_marginTop="12dp"
                 app:cardCornerRadius="16dp"
                 app:cardElevation="0dp"
+                app:cardBackgroundColor="?attr/colorSurface"
                 app:strokeColor="@color/mealStroke"
                 app:strokeWidth="1dp">
 

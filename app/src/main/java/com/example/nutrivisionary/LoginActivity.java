@@ -66,22 +66,35 @@ public class LoginActivity extends AppCompatActivity {
                 return;
             }
 
-            // Extract name from email if not provided (for login) or use provided name (for signup)
-            String displayName;
-            if (isLoginMode) {
-                displayName = email.split("@")[0];
-            } else {
-                displayName = name;
-            }
-
-            // Success
             SharedPreferences.Editor editor = sharedPref.edit();
-            editor.putBoolean("isLoggedIn", true);
-            editor.putString("userName", displayName);
-            editor.apply();
 
-            startActivity(new Intent(this, HomeDashboardActivity.class));
-            finish();
+            if (!isLoginMode) {
+                // SIGNUP MODE: Store unique user data
+                editor.putString("user_" + email + "_password", password);
+                editor.putString("user_" + email + "_name", name);
+                editor.putString("userName", name);
+                editor.putBoolean("isLoggedIn", true);
+                editor.apply();
+
+                Toast.makeText(this, "Account created!", Toast.LENGTH_SHORT).show();
+                startActivity(new Intent(this, HomeDashboardActivity.class));
+                finish();
+            } else {
+                // LOGIN MODE: Verify against specific user email
+                String storedPassword = sharedPref.getString("user_" + email + "_password", null);
+                String storedName = sharedPref.getString("user_" + email + "_name", null);
+
+                if (storedPassword != null && password.equals(storedPassword)) {
+                    editor.putBoolean("isLoggedIn", true);
+                    editor.putString("userName", storedName != null ? storedName : email.split("@")[0]);
+                    editor.apply();
+
+                    startActivity(new Intent(this, HomeDashboardActivity.class));
+                    finish();
+                } else {
+                    Toast.makeText(this, "Invalid email or password", Toast.LENGTH_SHORT).show();
+                }
+            }
         });
     }
 
