@@ -1,6 +1,8 @@
 package com.example.nutrivisionary;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.View;
@@ -21,7 +23,7 @@ public class SplashScreenActivity extends AppCompatActivity {
         logo = findViewById(R.id.logo);
         appName = findViewById(R.id.appName);
 
-        // 🔥 Scale animation for logo
+        // Scale animation for logo
         ScaleAnimation scaleAnimation = new ScaleAnimation(
                 0.5f, 1f,
                 0.5f, 1f,
@@ -31,15 +33,22 @@ public class SplashScreenActivity extends AppCompatActivity {
         scaleAnimation.setDuration(1000);
         logo.startAnimation(scaleAnimation);
 
-        // 🔥 Fade in text
+        // Fade in text
         appName.animate()
                 .alpha(1f)
                 .setDuration(1200)
                 .setStartDelay(500);
 
-        // 🔥 Navigate after delay
+        // Navigate after delay
         new Handler().postDelayed(() -> {
-            startActivity(new Intent(SplashScreenActivity.this, LoginActivity.class));
+            SharedPreferences sharedPref = getSharedPreferences("NutriPrefs", Context.MODE_PRIVATE);
+            boolean isLoggedIn = sharedPref.getBoolean("isLoggedIn", false);
+
+            if (isLoggedIn) {
+                startActivity(new Intent(SplashScreenActivity.this, HomeDashboardActivity.class));
+            } else {
+                startActivity(new Intent(SplashScreenActivity.this, LoginActivity.class));
+            }
             finish();
         }, 2200);
     }
