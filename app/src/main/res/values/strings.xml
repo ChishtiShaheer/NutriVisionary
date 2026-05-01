@@ -12,27 +12,32 @@
     <string name="passwordHint2">Password</string>
     <string name="signUpBtn">Sign Up</string>
     <string name="good_evening">Good Evening 👋</string>
-    <string name="user_name">Alex Johnson</string>
+    <string name="user_name">User</string>
     <string name="settings_desc">Settings</string>
-    <string name="calories_left">1400</string>
+
+    <!-- Dashboard Strings -->
+    <string name="calories_left">0</string>
+    <string name="calories_left_placeholder">%1$d</string>
     <string name="kcal_left_label">kcal left</string>
     <string name="daily_goal_label">Daily Goal</string>
     <string name="daily_goal_value">2000 kcal</string>
-    <string name="eaten_label">Eaten: 600 kcal</string>
+    <string name="daily_goal_value_placeholder">%1$d kcal</string>
+    <string name="eaten_label">Eaten: 0 kcal</string>
+    <string name="eaten_label_placeholder">Eaten: %1$d kcal</string>
     <string name="nutrition_breakdown">Nutrition Breakdown</string>
     <string name="protein">Protein</string>
-    <string name="protein_value">45g</string>
+    <string name="protein_value_placeholder">%1$dg</string>
     <string name="carbs">Carbs</string>
-    <string name="carbs_value">120g</string>
+    <string name="carbs_value_placeholder">%1$dg</string>
     <string name="fat">Fat</string>
-    <string name="fat_value">30g</string>
+    <string name="fat_value_placeholder">%1$dg</string>
     <string name="todays_tasks">Today\'s Tasks</string>
     <string name="logged_breakfast">Logged Breakfast</string>
     <string name="drink_water_task">Drink 2L Water</string>
     <string name="sleep_label">Sleep</string>
-    <string name="sleep_value">7.5 hrs</string>
+    <string name="sleep_value_placeholder">%1$.1f hrs</string>
     <string name="water_label">Water</string>
-    <string name="water_value">1.2 L</string>
+    <string name="water_value_placeholder">%1$.1f L</string>
     <string name="nav_home">Home</string>
     <string name="nav_scan">Scan</string>
     <string name="nav_meals">Meals</string>
@@ -42,17 +47,19 @@
     <!-- Analytics Strings -->
     <string name="analytics_title">Progress Analytics</string>
     <string name="weight_trend">Weight Trend</string>
-    <string name="avg_weight">72.4 kg</string>
-    <string name="weight_diff">-1.2 kg this week</string>
+    <string name="avg_weight">0.0 kg</string>
+    <string name="avg_weight_placeholder">%1$.1f kg</string>
+    <string name="weight_diff">Tracked this week</string>
     <string name="week">Week</string>
     <string name="month">Month</string>
     <string name="year">Year</string>
     <string name="avg_calories_label">Avg Calories</string>
-    <string name="avg_calories_value">1,840</string>
+    <string name="avg_calories_value">0</string>
     <string name="streak_label">Streak</string>
-    <string name="streak_value">14 Days</string>
+    <string name="streak_value">0 Days</string>
+    <string name="streak_value_placeholder">%1$d Days</string>
     <string name="goal_progress_label">Goal Progress</string>
-    <string name="goal_progress_value">82%</string>
+    <string name="goal_progress_value">0%</string>
     <string name="adherence_heatmap_title">Adherence Heatmap</string>
     <string name="legend_less">Less</string>
     <string name="legend_mid">Mid</string>
@@ -79,6 +86,7 @@
     <string name="chip_budget">Budget Friendly</string>
     <string name="chip_gluten_free">Gluten-Free</string>
     <string name="remaining_calories">Remaining</string>
+    <string name="meal_planner_title">Meal Planner</string>
 
     <!-- Profile Setup Strings -->
     <string name="profile_setup_title">Complete Your Profile</string>
@@ -101,7 +109,6 @@
     <string name="goal_gain">Gain Muscle</string>
     <string name="upload_photo">Upload Photo</string>
     <string name="complete_setup">Finish Setup</string>
-
 
     <!-- Settings Strings -->
     <string name="settings_title">Settings</string>
