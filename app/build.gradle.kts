@@ -1,5 +1,6 @@
 plugins {
     alias(libs.plugins.android.application)
+    alias(libs.plugins.google.services)
 }
 
 android {
@@ -37,6 +38,12 @@ dependencies {
     implementation(libs.activity)
     implementation(libs.constraintlayout)
     
+    // Firebase
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.auth)
+    implementation(libs.firebase.firestore)
+    implementation(libs.firebase.database)
+
     // CameraX
     implementation(libs.camera.core)
     implementation(libs.camera.camera2)
