@@ -1,54 +1,60 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
-    android:background="@color/white"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="@color/screenBackground">
 
     <LinearLayout
-        android:padding="24dp"
-        android:orientation="vertical"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="24dp">
 
         <TextView
-            android:text="@string/create_account"
-            android:textSize="26sp"
-            android:textStyle="bold"
-            android:textColor="@color/darkText"
-            android:layout_marginTop="40dp"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
+            android:layout_height="wrap_content"
+            android:layout_marginTop="40dp"
+            android:text="@string/create_account"
+            android:textColor="@color/darkText"
+            android:textSize="26sp"
+            android:textStyle="bold" />
 
         <EditText
             android:id="@+id/name"
-            android:hint="@string/name"
-            android:layout_marginTop="20dp"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"/>
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:hint="@string/name"
+            android:textColor="@color/darkText"
+            android:textColorHint="@color/grayText" />
 
         <EditText
             android:id="@+id/email"
-            android:hint="@string/emailHint2"
-            android:layout_marginTop="16dp"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"/>
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:hint="@string/emailHint2"
+            android:textColor="@color/darkText"
+            android:textColorHint="@color/grayText" />
 
         <EditText
             android:id="@+id/password"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
             android:hint="@string/passwordHint2"
             android:inputType="textPassword"
-            android:layout_marginTop="16dp"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"/>
+            android:textColor="@color/darkText"
+            android:textColorHint="@color/grayText" />
 
         <Button
             android:id="@+id/signUpBtn"
-            android:text="@string/signUpBtn"
-            android:textColor="@color/white"
-            android:backgroundTint="@color/primaryBlue"
-            android:layout_marginTop="24dp"
             android:layout_width="match_parent"
-            android:layout_height="50dp"/>
+            android:layout_height="50dp"
+            android:layout_marginTop="24dp"
+            android:backgroundTint="@color/primaryBlue"
+            android:text="@string/signUpBtn"
+            android:textColor="@color/white" />
 
     </LinearLayout>
 </ScrollView>

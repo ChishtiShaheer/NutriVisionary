@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/white"
+    android:background="@color/screenBackground"
     android:clipToPadding="false"
     android:paddingBottom="24dp">
 
@@ -17,7 +17,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/profile_setup_title"
-            android:textColor="@color/navyBlue"
+            android:textColor="@color/darkText"
             android:textSize="28sp"
             android:textStyle="bold" />
 
@@ -26,7 +26,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
             android:text="@string/profile_setup_subtitle"
-            android:textColor="@color/slateGray"
+            android:textColor="@color/grayText"
             android:textSize="16sp" />
 
         <!-- PROFILE PHOTO SECTION -->
@@ -43,7 +43,7 @@
                 android:padding="2dp"
                 android:src="@drawable/ic_profile"
                 app:shapeAppearanceOverlay="@style/CircleImageView"
-                app:strokeColor="@color/mealStroke"
+                app:strokeColor="@color/primaryBlue"
                 app:strokeWidth="2dp" />
 
             <com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -64,7 +64,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="32dp"
             android:text="@string/personal_info"
-            android:textColor="@color/navyBlue"
+            android:textColor="@color/darkText"
             android:textSize="18sp"
             android:textStyle="bold" />
 
@@ -79,6 +79,7 @@
                 android:id="@+id/etName"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:textColor="@color/darkText"
                 android:inputType="textPersonName" />
         </com.google.android.material.textfield.TextInputLayout>
 
@@ -93,6 +94,7 @@
                 android:id="@+id/etAge"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:textColor="@color/darkText"
                 android:inputType="number" />
         </com.google.android.material.textfield.TextInputLayout>
 
@@ -101,7 +103,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
             android:text="Gender"
-            android:textColor="@color/slateGray"
+            android:textColor="@color/grayText"
             android:textSize="14sp" />
 
         <com.google.android.material.chip.ChipGroup
@@ -116,21 +118,27 @@
                 style="@style/Widget.MaterialComponents.Chip.Choice"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/gender_male" />
+                android:text="@string/gender_male"
+                app:chipBackgroundColor="@color/chip_background_color"
+                android:textColor="@color/darkText" />
 
             <com.google.android.material.chip.Chip
                 android:id="@+id/chipFemale"
                 style="@style/Widget.MaterialComponents.Chip.Choice"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/gender_female" />
+                android:text="@string/gender_female"
+                app:chipBackgroundColor="@color/chip_background_color"
+                android:textColor="@color/darkText" />
 
             <com.google.android.material.chip.Chip
                 android:id="@+id/chipOther"
                 style="@style/Widget.MaterialComponents.Chip.Choice"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/gender_other" />
+                android:text="@string/gender_other"
+                app:chipBackgroundColor="@color/chip_background_color"
+                android:textColor="@color/darkText" />
         </com.google.android.material.chip.ChipGroup>
 
         <!-- BODY STATS CARD -->
@@ -139,7 +147,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="24dp"
             android:text="@string/body_stats"
-            android:textColor="@color/navyBlue"
+            android:textColor="@color/darkText"
             android:textSize="18sp"
             android:textStyle="bold" />
 
@@ -162,6 +170,7 @@
                     android:id="@+id/etWeight"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:textColor="@color/darkText"
                     android:inputType="numberDecimal" />
             </com.google.android.material.textfield.TextInputLayout>
 
@@ -177,6 +186,7 @@
                     android:id="@+id/etHeight"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:textColor="@color/darkText"
                     android:inputType="numberDecimal" />
             </com.google.android.material.textfield.TextInputLayout>
         </LinearLayout>
@@ -187,7 +197,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="24dp"
             android:text="@string/lifestyle_goals"
-            android:textColor="@color/navyBlue"
+            android:textColor="@color/darkText"
             android:textSize="18sp"
             android:textStyle="bold" />
 
@@ -196,7 +206,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
             android:text="Activity Level"
-            android:textColor="@color/slateGray"
+            android:textColor="@color/grayText"
             android:textSize="14sp" />
 
         <com.google.android.material.chip.ChipGroup
@@ -210,25 +220,33 @@
                 style="@style/Widget.MaterialComponents.Chip.Choice"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/activity_sedentary" />
+                android:text="@string/activity_sedentary"
+                app:chipBackgroundColor="@color/chip_background_color"
+                android:textColor="@color/darkText" />
 
             <com.google.android.material.chip.Chip
                 style="@style/Widget.MaterialComponents.Chip.Choice"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/activity_moderate" />
+                android:text="@string/activity_moderate"
+                app:chipBackgroundColor="@color/chip_background_color"
+                android:textColor="@color/darkText" />
 
             <com.google.android.material.chip.Chip
                 style="@style/Widget.MaterialComponents.Chip.Choice"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/activity_active" />
+                android:text="@string/activity_active"
+                app:chipBackgroundColor="@color/chip_background_color"
+                android:textColor="@color/darkText" />
 
             <com.google.android.material.chip.Chip
                 style="@style/Widget.MaterialComponents.Chip.Choice"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/activity_athlete" />
+                android:text="@string/activity_athlete"
+                app:chipBackgroundColor="@color/chip_background_color"
+                android:textColor="@color/darkText" />
         </com.google.android.material.chip.ChipGroup>
 
         <TextView
@@ -236,7 +254,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
             android:text="Primary Goal"
-            android:textColor="@color/slateGray"
+            android:textColor="@color/grayText"
             android:textSize="14sp" />
 
         <com.google.android.material.chip.ChipGroup
@@ -250,19 +268,25 @@
                 style="@style/Widget.MaterialComponents.Chip.Choice"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/goal_lose" />
+                android:text="@string/goal_lose"
+                app:chipBackgroundColor="@color/chip_background_color"
+                android:textColor="@color/darkText" />
 
             <com.google.android.material.chip.Chip
                 style="@style/Widget.MaterialComponents.Chip.Choice"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/goal_maintain" />
+                android:text="@string/goal_maintain"
+                app:chipBackgroundColor="@color/chip_background_color"
+                android:textColor="@color/darkText" />
 
             <com.google.android.material.chip.Chip
                 style="@style/Widget.MaterialComponents.Chip.Choice"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/goal_gain" />
+                android:text="@string/goal_gain"
+                app:chipBackgroundColor="@color/chip_background_color"
+                android:textColor="@color/darkText" />
         </com.google.android.material.chip.ChipGroup>
 
         <com.google.android.material.button.MaterialButton
