@@ -9,6 +9,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.switchmaterial.SwitchMaterial;
+import com.google.firebase.auth.FirebaseAuth;
 
 public class SettingsActivity extends AppCompatActivity {
 
@@ -37,8 +38,13 @@ public class SettingsActivity extends AppCompatActivity {
 
         // Logout implementation
         btnLogout.setOnClickListener(v -> {
+            // Firebase Sign Out
+            FirebaseAuth.getInstance().signOut();
+
+            // Clear Local Prefs
             SharedPreferences sharedPref = getSharedPreferences("NutriPrefs", Context.MODE_PRIVATE);
             SharedPreferences.Editor editor = sharedPref.edit();
+            editor.clear();
             editor.putBoolean("isLoggedIn", false);
             editor.apply();
 

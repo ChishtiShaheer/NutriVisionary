@@ -29,7 +29,17 @@ import com.google.android.material.button.MaterialButton;
 import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.common.util.concurrent.ListenableFuture;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.SetOptions;
 import java.nio.ByteBuffer;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -43,7 +53,7 @@ public class ScanFoodActivity extends AppCompatActivity {
     private PreviewView viewFinder;
     private ImageView ivCapturedImage;
     private FloatingActionButton fabCapture;
-    private MaterialButton btnRetake, btnAnalyze;
+    private MaterialButton btnRetake, btnAnalyze, btnLogFood;
     private LinearLayout layoutProcessing;
     private MaterialCardView layoutResult;
     private ImageView btnBack;
@@ -57,16 +67,28 @@ public class ScanFoodActivity extends AppCompatActivity {
     private ExecutorService cameraExecutor;
     private ProcessCameraProvider cameraProvider;
 
+    private FirebaseAuth mAuth;
+    private FirebaseFirestore db;
+    
+    private int lastResultKcal = 0;
+    private int lastResultProtein = 0;
+    private int lastResultCarbs = 0;
+    private String lastResultName = "";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_scan_food);
+
+        mAuth = FirebaseAuth.getInstance();
+        db = FirebaseFirestore.getInstance();
 
         viewFinder = findViewById(R.id.viewFinder);
         ivCapturedImage = findViewById(R.id.ivCapturedImage);
         fabCapture = findViewById(R.id.fabCapture);
         btnRetake = findViewById(R.id.btnRetake);
         btnAnalyze = findViewById(R.id.btnAnalyze);
+        btnLogFood = findViewById(R.id.btnLogFood);
         layoutProcessing = findViewById(R.id.layoutProcessing);
         layoutResult = findViewById(R.id.layoutResult);
         btnBack = findViewById(R.id.btnBack);
@@ -83,6 +105,7 @@ public class ScanFoodActivity extends AppCompatActivity {
         btnBack.setOnClickListener(v -> finish());
         btnRetake.setOnClickListener(v -> resetCamera());
         btnAnalyze.setOnClickListener(v -> startAnalysis());
+        btnLogFood.setOnClickListener(v -> logFoodToFirebase());
 
         if (allPermissionsGranted()) {
             startCamera();
@@ -193,7 +216,12 @@ public class ScanFoodActivity extends AppCompatActivity {
         // Simulate AI Processing and Response
         new Handler(Looper.getMainLooper()).postDelayed(() -> {
             layoutProcessing.setVisibility(View.GONE);
-            showResult("Grilled Avocado & Quinoa Bowl", "380 kcal", "12g", "45g", 
+            lastResultName = "Grilled Avocado & Quinoa Bowl";
+            lastResultKcal = 380;
+            lastResultProtein = 12;
+            lastResultCarbs = 45;
+            
+            showResult(lastResultName, lastResultKcal + " kcal", lastResultProtein + "g", lastResultCarbs + "g", 
                     "This nutrient-dense bowl is packed with healthy fats and complex carbohydrates. Great for sustained energy.");
             
             btnRetake.setEnabled(true);
@@ -209,6 +237,55 @@ public class ScanFoodActivity extends AppCompatActivity {
         
         layoutResult.setVisibility(View.VISIBLE);
         btnAnalyze.setVisibility(View.GONE);
+    }
+
+    private void logFoodToFirebase() {
+        if (mAuth.getCurrentUser() == null) return;
+        
+        btnLogFood.setEnabled(false);
+        String todayDate = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date());
+        
+        db.collection("users").document(mAuth.getCurrentUser().getUid())
+                .collection("logs").document(todayDate).get()
+                .addOnSuccessListener(doc -> {
+                    int currentCals = 0;
+                    int currentProtein = 0;
+                    int currentCarbs = 0;
+                    List<String> snacks = new ArrayList<>();
+                    
+                    if (doc.exists()) {
+                        Long c = doc.getLong("consumedKcal");
+                        Long p = doc.getLong("consumedProtein");
+                        Long cb = doc.getLong("consumedCarbs");
+                        if (c != null) currentCals = c.intValue();
+                        if (p != null) currentProtein = p.intValue();
+                        if (cb != null) currentCarbs = cb.intValue();
+                        
+                        List<String> existingSnacks = (List<String>) doc.get("foods_Snacks");
+                        if (existingSnacks != null) snacks.addAll(existingSnacks);
+                    }
+                    
+                    snacks.add(lastResultName + " (" + lastResultKcal + " kcal)");
+                    
+                    Map<String, Object> update = new HashMap<>();
+                    update.put("consumedKcal", currentCals + lastResultKcal);
+                    update.put("consumedProtein", currentProtein + lastResultProtein);
+                    update.put("consumedCarbs", currentCarbs + lastResultCarbs);
+                    update.put("foods_Snacks", snacks);
+                    update.put("lastUpdated", new Date());
+
+                    db.collection("users").document(mAuth.getCurrentUser().getUid())
+                            .collection("logs").document(todayDate)
+                            .set(update, SetOptions.merge())
+                            .addOnSuccessListener(aVoid -> {
+                                Toast.makeText(this, "Logged to Snacks!", Toast.LENGTH_SHORT).show();
+                                finish();
+                            })
+                            .addOnFailureListener(e -> {
+                                btnLogFood.setEnabled(true);
+                                Toast.makeText(this, "Failed to log food", Toast.LENGTH_SHORT).show();
+                            });
+                });
     }
 
     private boolean allPermissionsGranted() {

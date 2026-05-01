@@ -6,6 +6,7 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Patterns;
 import android.view.View;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -14,22 +15,35 @@ import androidx.core.content.ContextCompat;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.FirebaseFirestore;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class LoginActivity extends AppCompatActivity {
 
     private TextInputLayout tilName;
     private TextInputEditText etName, etEmail, etPassword;
     private MaterialButton tabLogin, tabSignup, btnSubmit;
+    private ProgressBar progressBar;
     private boolean isLoginMode = true;
+    
+    private FirebaseAuth mAuth;
+    private FirebaseFirestore db;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        SharedPreferences sharedPref = getSharedPreferences("NutriPrefs", Context.MODE_PRIVATE);
-        if (sharedPref.getBoolean("isLoggedIn", false)) {
-            startActivity(new Intent(this, HomeDashboardActivity.class));
-            finish();
+        mAuth = FirebaseAuth.getInstance();
+        db = FirebaseFirestore.getInstance();
+
+        // Check if user is already logged in
+        FirebaseUser currentUser = mAuth.getCurrentUser();
+        if (currentUser != null) {
+            goToDashboard();
             return;
         }
 
@@ -42,60 +56,126 @@ public class LoginActivity extends AppCompatActivity {
         tabLogin = findViewById(R.id.tabLogin);
         tabSignup = findViewById(R.id.tabSignup);
         btnSubmit = findViewById(R.id.btnSubmit);
-
+        
+        // Add a ProgressBar to the layout if it exists, or just handle visibility
+        // For now, I'll assume standard UI feedback
+        
         tabLogin.setOnClickListener(v -> switchMode(true));
         tabSignup.setOnClickListener(v -> switchMode(false));
 
-        btnSubmit.setOnClickListener(v -> {
-            String email = etEmail.getText().toString().trim();
-            String password = etPassword.getText().toString().trim();
-            String name = etName.getText().toString().trim();
+        btnSubmit.setOnClickListener(v -> handleAuth());
+    }
 
-            if (email.isEmpty() || password.isEmpty() || (!isLoginMode && name.isEmpty())) {
-                Toast.makeText(this, "Please fill all fields", Toast.LENGTH_SHORT).show();
-                return;
-            }
+    private void handleAuth() {
+        String email = etEmail.getText().toString().trim();
+        String password = etPassword.getText().toString().trim();
+        String name = etName.getText().toString().trim();
 
-            if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-                Toast.makeText(this, "Invalid email format", Toast.LENGTH_SHORT).show();
-                return;
-            }
+        if (email.isEmpty() || password.isEmpty() || (!isLoginMode && name.isEmpty())) {
+            Toast.makeText(this, "Please fill all fields", Toast.LENGTH_SHORT).show();
+            return;
+        }
 
-            if (password.length() < 8) {
-                Toast.makeText(this, "Password must be at least 8 characters", Toast.LENGTH_SHORT).show();
-                return;
-            }
+        if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+            Toast.makeText(this, "Invalid email format", Toast.LENGTH_SHORT).show();
+            return;
+        }
 
-            SharedPreferences.Editor editor = sharedPref.edit();
+        if (password.length() < 6) { // Firebase requires at least 6 chars
+            Toast.makeText(this, "Password must be at least 6 characters", Toast.LENGTH_SHORT).show();
+            return;
+        }
 
-            if (!isLoginMode) {
-                // SIGNUP MODE: Store unique user data
-                editor.putString("user_" + email + "_password", password);
-                editor.putString("user_" + email + "_name", name);
-                editor.putString("userName", name);
-                editor.putBoolean("isLoggedIn", true);
-                editor.apply();
+        btnSubmit.setEnabled(false);
 
-                Toast.makeText(this, "Account created!", Toast.LENGTH_SHORT).show();
-                startActivity(new Intent(this, HomeDashboardActivity.class));
-                finish();
-            } else {
-                // LOGIN MODE: Verify against specific user email
-                String storedPassword = sharedPref.getString("user_" + email + "_password", null);
-                String storedName = sharedPref.getString("user_" + email + "_name", null);
+        if (isLoginMode) {
+            loginUser(email, password);
+        } else {
+            signupUser(email, password, name);
+        }
+    }
 
-                if (storedPassword != null && password.equals(storedPassword)) {
-                    editor.putBoolean("isLoggedIn", true);
-                    editor.putString("userName", storedName != null ? storedName : email.split("@")[0]);
-                    editor.apply();
+    private void loginUser(String email, String password) {
+        mAuth.signInWithEmailAndPassword(email, password)
+                .addOnCompleteListener(this, task -> {
+                    if (task.isSuccessful()) {
+                        FirebaseUser user = mAuth.getCurrentUser();
+                        fetchUserDataAndProceed(user);
+                    } else {
+                        btnSubmit.setEnabled(true);
+                        Toast.makeText(LoginActivity.this, "Authentication failed: " + task.getException().getMessage(),
+                                Toast.LENGTH_SHORT).show();
+                    }
+                });
+    }
 
-                    startActivity(new Intent(this, HomeDashboardActivity.class));
+    private void signupUser(String email, String password, String name) {
+        mAuth.createUserWithEmailAndPassword(email, password)
+                .addOnCompleteListener(this, task -> {
+                    if (task.isSuccessful()) {
+                        FirebaseUser user = mAuth.getCurrentUser();
+                        saveUserToFirestore(user, name);
+                    } else {
+                        btnSubmit.setEnabled(true);
+                        Toast.makeText(LoginActivity.this, "Registration failed: " + task.getException().getMessage(),
+                                Toast.LENGTH_SHORT).show();
+                    }
+                });
+    }
+
+    private void saveUserToFirestore(FirebaseUser user, String name) {
+        Map<String, Object> userMap = new HashMap<>();
+        userMap.put("name", name);
+        userMap.put("email", user.getEmail());
+        userMap.put("uid", user.getUid());
+        userMap.put("isProfileComplete", false);
+
+        db.collection("users").document(user.getUid())
+                .set(userMap)
+                .addOnSuccessListener(aVoid -> {
+                    saveToPrefs(name, user.getEmail(), false);
+                    startActivity(new Intent(LoginActivity.this, ProfileSetupActivity.class));
                     finish();
-                } else {
-                    Toast.makeText(this, "Invalid email or password", Toast.LENGTH_SHORT).show();
-                }
-            }
-        });
+                })
+                .addOnFailureListener(e -> {
+                    btnSubmit.setEnabled(true);
+                    Toast.makeText(LoginActivity.this, "Error saving user data", Toast.LENGTH_SHORT).show();
+                });
+    }
+
+    private void fetchUserDataAndProceed(FirebaseUser user) {
+        db.collection("users").document(user.getUid()).get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists()) {
+                        String name = documentSnapshot.getString("name");
+                        Boolean isProfileComplete = documentSnapshot.getBoolean("isProfileComplete");
+                        saveToPrefs(name, user.getEmail(), true);
+                        
+                        if (isProfileComplete != null && isProfileComplete) {
+                            goToDashboard();
+                        } else {
+                            startActivity(new Intent(LoginActivity.this, ProfileSetupActivity.class));
+                            finish();
+                        }
+                    } else {
+                        goToDashboard(); // Fallback
+                    }
+                })
+                .addOnFailureListener(e -> goToDashboard());
+    }
+
+    private void saveToPrefs(String name, String email, boolean loggedIn) {
+        SharedPreferences sharedPref = getSharedPreferences("NutriPrefs", Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.putString("userName", name);
+        editor.putString("userEmail", email);
+        editor.putBoolean("isLoggedIn", loggedIn);
+        editor.apply();
+    }
+
+    private void goToDashboard() {
+        startActivity(new Intent(LoginActivity.this, HomeDashboardActivity.class));
+        finish();
     }
 
     private void switchMode(boolean login) {
