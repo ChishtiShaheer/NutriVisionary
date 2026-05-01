@@ -92,12 +92,13 @@
                         android:layout_height="120dp">
 
                         <ProgressBar
+                            android:id="@+id/calorieProgress"
                             style="?android:attr/progressBarStyleHorizontal"
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"
                             android:indeterminate="false"
                             android:max="100"
-                            android:progress="75"
+                            android:progress="0"
                             android:progressDrawable="@drawable/circular_progress" />
 
                         <LinearLayout
@@ -108,9 +109,10 @@
                             android:orientation="vertical">
 
                             <TextView
+                                android:id="@+id/calories_left"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="@string/calories_left"
+                                android:text="0"
                                 android:textColor="@color/white"
                                 android:textSize="22sp"
                                 android:textStyle="bold" />
@@ -139,9 +141,10 @@
                             android:textSize="14sp" />
 
                         <TextView
+                            android:id="@+id/daily_goal_value"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="@string/daily_goal_value"
+                            android:text="2000 kcal"
                             android:textColor="@color/white"
                             android:textSize="20sp"
                             android:textStyle="bold" />
@@ -153,10 +156,11 @@
                             android:background="#4DFFFFFF" />
 
                         <TextView
+                            android:id="@+id/eaten_label"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="8dp"
-                            android:text="@string/eaten_label"
+                            android:text="Eaten: 0 kcal"
                             android:textColor="#B3FFFFFF"
                             android:textSize="12sp" />
                     </LinearLayout>
@@ -205,20 +209,22 @@
                             android:textSize="12sp" />
 
                         <TextView
+                            android:id="@+id/tvProteinValue"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="4dp"
-                            android:text="@string/protein_value"
+                            android:text="0g"
                             android:textColor="@color/macroProtein"
                             android:textSize="16sp"
                             android:textStyle="bold" />
 
                         <ProgressBar
+                            android:id="@+id/pbProtein"
                             style="?android:attr/progressBarStyleHorizontal"
                             android:layout_width="match_parent"
                             android:layout_height="4dp"
                             android:layout_marginTop="8dp"
-                            android:progress="60"
+                            android:progress="0"
                             android:progressTint="@color/macroProtein" />
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
@@ -248,20 +254,22 @@
                             android:textSize="12sp" />
 
                         <TextView
+                            android:id="@+id/tvCarbsValue"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="4dp"
-                            android:text="@string/carbs_value"
+                            android:text="0g"
                             android:textColor="@color/macroCarbs"
                             android:textSize="16sp"
                             android:textStyle="bold" />
 
                         <ProgressBar
+                            android:id="@+id/pbCarbs"
                             style="?android:attr/progressBarStyleHorizontal"
                             android:layout_width="match_parent"
                             android:layout_height="4dp"
                             android:layout_marginTop="8dp"
-                            android:progress="40"
+                            android:progress="0"
                             android:progressTint="@color/macroCarbs" />
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
@@ -290,20 +298,22 @@
                             android:textSize="12sp" />
 
                         <TextView
+                            android:id="@+id/tvFatValue"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="4dp"
-                            android:text="@string/fat_value"
+                            android:text="0g"
                             android:textColor="@color/macroFat"
                             android:textSize="16sp"
                             android:textStyle="bold" />
 
                         <ProgressBar
+                            android:id="@+id/pbFat"
                             style="?android:attr/progressBarStyleHorizontal"
                             android:layout_width="match_parent"
                             android:layout_height="4dp"
                             android:layout_marginTop="8dp"
-                            android:progress="80"
+                            android:progress="0"
                             android:progressTint="@color/macroFat" />
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
@@ -348,11 +358,12 @@
                             android:textSize="15sp" />
 
                         <CheckBox
+                            android:id="@+id/cbBreakfast"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_alignParentEnd="true"
                             android:buttonTint="@color/primaryBlue"
-                            android:checked="true" />
+                            android:enabled="false" />
                     </RelativeLayout>
 
                     <View
@@ -376,6 +387,7 @@
                             android:textSize="15sp" />
 
                         <CheckBox
+                            android:id="@+id/cbWater"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_alignParentEnd="true"
@@ -415,10 +427,11 @@
                             android:textSize="12sp" />
 
                         <TextView
+                            android:id="@+id/tvSleepValue"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="4dp"
-                            android:text="@string/sleep_value"
+                            android:text="7.5 hrs"
                             android:textColor="@color/primaryBlue"
                             android:textSize="18sp"
                             android:textStyle="bold" />
@@ -448,10 +461,11 @@
                             android:textSize="12sp" />
 
                         <TextView
+                            android:id="@+id/tvWaterValue"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="4dp"
-                            android:text="@string/water_value"
+                            android:text="1.2 L"
                             android:textColor="#2196F3"
                             android:textSize="18sp"
                             android:textStyle="bold" />

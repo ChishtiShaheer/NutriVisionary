@@ -95,7 +95,7 @@
         android:layout_height="wrap_content"
         android:layout_margin="20dp"
         android:visibility="gone"
-        app:cardBackgroundColor="@color/white"
+        app:cardBackgroundColor="@color/cardBackground"
         app:cardCornerRadius="24dp"
         app:cardElevation="8dp"
         app:layout_constraintBottom_toTopOf="@id/layoutControls"
@@ -123,7 +123,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
                 android:text="Grilled Salmon Salad"
-                android:textColor="@color/navyBlue"
+                android:textColor="@color/darkText"
                 android:textSize="22sp"
                 android:textStyle="bold" />
 
@@ -150,14 +150,14 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Calories"
-                        android:textColor="@color/slateGray"
+                        android:textColor="@color/grayText"
                         android:textSize="12sp" />
                     <TextView
                         android:id="@+id/tvResultCalories"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="450 kcal"
-                        android:textColor="@color/navyBlue"
+                        android:textColor="@color/darkText"
                         android:textSize="16sp"
                         android:textStyle="bold" />
                 </LinearLayout>
@@ -172,7 +172,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Protein"
-                        android:textColor="@color/slateGray"
+                        android:textColor="@color/grayText"
                         android:textSize="12sp" />
                     <TextView
                         android:id="@+id/tvResultProtein"
@@ -194,7 +194,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Carbs"
-                        android:textColor="@color/slateGray"
+                        android:textColor="@color/grayText"
                         android:textSize="12sp" />
                     <TextView
                         android:id="@+id/tvResultCarbs"
@@ -213,9 +213,20 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
-                android:text="This meal is rich in Omega-3 fatty acids and high in protein, making it excellent for muscle recovery."
-                android:textColor="@color/slateGray"
+                android:text="AI Description..."
+                android:textColor="@color/grayText"
                 android:textSize="14sp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnLogFood"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:layout_marginTop="20dp"
+                android:text="Add to Today's Diary"
+                android:textAllCaps="false"
+                android:textStyle="bold"
+                app:cornerRadius="28dp"
+                app:backgroundTint="@color/royalBlue" />
 
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>

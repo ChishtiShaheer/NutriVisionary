@@ -6,9 +6,38 @@
     android:layout_height="match_parent"
     android:background="@color/screenBackground">
 
+    <!-- TOOLBAR -->
+    <RelativeLayout
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="64dp"
+        android:background="@color/cardBackground"
+        android:paddingHorizontal="16dp">
+
+        <ImageView
+            android:id="@+id/btnBack"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_centerVertical="true"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:padding="8dp"
+            android:src="@android:drawable/ic_menu_revert"
+            app:tint="@color/navyBlue" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:text="Meal Planner"
+            android:textColor="@color/navyBlue"
+            android:textSize="20sp"
+            android:textStyle="bold" />
+    </RelativeLayout>
+
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:layout_below="@id/toolbar"
         android:clipToPadding="false"
         android:paddingBottom="24dp">
 
@@ -17,6 +46,7 @@
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:padding="20dp">
+
             <!-- HEADER: THE BLUEPRINT -->
             <TextView
                 android:layout_width="wrap_content"
