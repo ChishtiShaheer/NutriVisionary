@@ -6,7 +6,6 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Patterns;
 import android.view.View;
-import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -27,7 +26,6 @@ public class LoginActivity extends AppCompatActivity {
     private TextInputLayout tilName;
     private TextInputEditText etName, etEmail, etPassword;
     private MaterialButton tabLogin, tabSignup, btnSubmit;
-    private ProgressBar progressBar;
     private boolean isLoginMode = true;
     
     private FirebaseAuth mAuth;
@@ -40,7 +38,6 @@ public class LoginActivity extends AppCompatActivity {
         mAuth = FirebaseAuth.getInstance();
         db = FirebaseFirestore.getInstance();
 
-        // Check if user is already logged in
         FirebaseUser currentUser = mAuth.getCurrentUser();
         if (currentUser != null) {
             goToDashboard();
@@ -57,12 +54,8 @@ public class LoginActivity extends AppCompatActivity {
         tabSignup = findViewById(R.id.tabSignup);
         btnSubmit = findViewById(R.id.btnSubmit);
         
-        // Add a ProgressBar to the layout if it exists, or just handle visibility
-        // For now, I'll assume standard UI feedback
-        
         tabLogin.setOnClickListener(v -> switchMode(true));
         tabSignup.setOnClickListener(v -> switchMode(false));
-
         btnSubmit.setOnClickListener(v -> handleAuth());
     }
 
@@ -81,7 +74,7 @@ public class LoginActivity extends AppCompatActivity {
             return;
         }
 
-        if (password.length() < 6) { // Firebase requires at least 6 chars
+        if (password.length() < 6) {
             Toast.makeText(this, "Password must be at least 6 characters", Toast.LENGTH_SHORT).show();
             return;
         }
@@ -99,12 +92,10 @@ public class LoginActivity extends AppCompatActivity {
         mAuth.signInWithEmailAndPassword(email, password)
                 .addOnCompleteListener(this, task -> {
                     if (task.isSuccessful()) {
-                        FirebaseUser user = mAuth.getCurrentUser();
-                        fetchUserDataAndProceed(user);
+                        fetchUserDataAndProceed(mAuth.getCurrentUser());
                     } else {
                         btnSubmit.setEnabled(true);
-                        Toast.makeText(LoginActivity.this, "Authentication failed: " + task.getException().getMessage(),
-                                Toast.LENGTH_SHORT).show();
+                        Toast.makeText(this, "Authentication failed: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
                     }
                 });
     }
@@ -113,12 +104,10 @@ public class LoginActivity extends AppCompatActivity {
         mAuth.createUserWithEmailAndPassword(email, password)
                 .addOnCompleteListener(this, task -> {
                     if (task.isSuccessful()) {
-                        FirebaseUser user = mAuth.getCurrentUser();
-                        saveUserToFirestore(user, name);
+                        saveUserToFirestore(mAuth.getCurrentUser(), name);
                     } else {
                         btnSubmit.setEnabled(true);
-                        Toast.makeText(LoginActivity.this, "Registration failed: " + task.getException().getMessage(),
-                                Toast.LENGTH_SHORT).show();
+                        Toast.makeText(this, "Registration failed: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
                     }
                 });
     }
@@ -134,12 +123,12 @@ public class LoginActivity extends AppCompatActivity {
                 .set(userMap)
                 .addOnSuccessListener(aVoid -> {
                     saveToPrefs(name, user.getEmail(), false);
-                    startActivity(new Intent(LoginActivity.this, ProfileSetupActivity.class));
+                    startActivity(new Intent(this, ProfileSetupActivity.class));
                     finish();
                 })
                 .addOnFailureListener(e -> {
                     btnSubmit.setEnabled(true);
-                    Toast.makeText(LoginActivity.this, "Error saving user data", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, "Error saving user data", Toast.LENGTH_SHORT).show();
                 });
     }
 
@@ -154,11 +143,11 @@ public class LoginActivity extends AppCompatActivity {
                         if (isProfileComplete != null && isProfileComplete) {
                             goToDashboard();
                         } else {
-                            startActivity(new Intent(LoginActivity.this, ProfileSetupActivity.class));
+                            startActivity(new Intent(this, ProfileSetupActivity.class));
                             finish();
                         }
                     } else {
-                        goToDashboard(); // Fallback
+                        goToDashboard();
                     }
                 })
                 .addOnFailureListener(e -> goToDashboard());
@@ -166,15 +155,15 @@ public class LoginActivity extends AppCompatActivity {
 
     private void saveToPrefs(String name, String email, boolean loggedIn) {
         SharedPreferences sharedPref = getSharedPreferences("NutriPrefs", Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPref.edit();
-        editor.putString("userName", name);
-        editor.putString("userEmail", email);
-        editor.putBoolean("isLoggedIn", loggedIn);
-        editor.apply();
+        sharedPref.edit()
+                .putString("userName", name)
+                .putString("userEmail", email)
+                .putBoolean("isLoggedIn", loggedIn)
+                .apply();
     }
 
     private void goToDashboard() {
-        startActivity(new Intent(LoginActivity.this, HomeDashboardActivity.class));
+        startActivity(new Intent(this, HomeDashboardActivity.class));
         finish();
     }
 
@@ -185,7 +174,6 @@ public class LoginActivity extends AppCompatActivity {
             tabLogin.setTextColor(ContextCompat.getColor(this, R.color.white));
             tabSignup.setBackgroundTintList(ContextCompat.getColorStateList(this, android.R.color.transparent));
             tabSignup.setTextColor(ContextCompat.getColor(this, R.color.slateGray));
-            
             tilName.setVisibility(View.GONE);
             btnSubmit.setText("Login");
         } else {
@@ -193,7 +181,6 @@ public class LoginActivity extends AppCompatActivity {
             tabSignup.setTextColor(ContextCompat.getColor(this, R.color.white));
             tabLogin.setBackgroundTintList(ContextCompat.getColorStateList(this, android.R.color.transparent));
             tabLogin.setTextColor(ContextCompat.getColor(this, R.color.slateGray));
-            
             tilName.setVisibility(View.VISIBLE);
             btnSubmit.setText("Create Account");
         }
