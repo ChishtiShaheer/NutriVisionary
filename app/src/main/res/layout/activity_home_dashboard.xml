@@ -72,64 +72,6 @@
                     app:tint="@color/darkText" />
             </RelativeLayout>
 
-            <!-- IMMUNITY SHIELD WIDGET -->
-            <com.google.android.material.card.MaterialCardView
-                android:id="@+id/cardImmunity"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="20dp"
-                app:cardBackgroundColor="@color/cardBackground"
-                app:cardCornerRadius="20dp"
-                app:cardElevation="2dp">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal"
-                    android:padding="16dp">
-
-                    <ImageView
-                        android:id="@+id/ivShield"
-                        android:layout_width="60dp"
-                        android:layout_height="60dp"
-                        android:src="@drawable/ic_shield_alert"
-                        app:tint="@color/royalBlue"
-                        android:contentDescription="Immunity Shield Icon" />
-
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="16dp"
-                        android:layout_weight="1"
-                        android:orientation="vertical">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@string/immunity_shield"
-                            android:textColor="@color/darkText"
-                            android:textSize="16sp"
-                            android:textStyle="bold" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@string/immunity_desc"
-                            android:textColor="@color/grayText"
-                            android:textSize="12sp" />
-                    </LinearLayout>
-
-                    <TextView
-                        android:id="@+id/tvShieldStatus"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/status_loading"
-                        android:textColor="@color/macroProtein"
-                        android:textStyle="bold" />
-                </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
-
             <!-- MAIN CALORIE CARD -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
@@ -388,37 +330,54 @@
                 </com.google.android.material.card.MaterialCardView>
             </LinearLayout>
 
-            <!-- WATER & SLEEP PROGRESS -->
+            <!-- WATER & SLEEP -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="24dp"
+                android:baselineAligned="false"
                 android:orientation="horizontal">
 
+                <!-- WATER CARD -->
                 <com.google.android.material.card.MaterialCardView
                     android:id="@+id/cardWater"
                     android:layout_width="0dp"
-                    android:layout_height="wrap_content"
+                    android:layout_height="match_parent"
                     android:layout_marginEnd="8dp"
                     android:layout_weight="1"
-                    android:clickable="true"
-                    android:focusable="true"
                     app:cardBackgroundColor="@color/cardBackground"
                     app:cardCornerRadius="20dp"
                     app:cardElevation="2dp">
 
                     <LinearLayout
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
+                        android:layout_height="match_parent"
                         android:orientation="vertical"
                         android:padding="16dp">
 
-                        <TextView
-                            android:layout_width="wrap_content"
+                        <LinearLayout
+                            android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:text="@string/water_label"
-                            android:textColor="@color/grayText"
-                            android:textSize="12sp" />
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical">
+
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="@string/water_label"
+                                android:textColor="@color/grayText"
+                                android:textSize="12sp" />
+
+                            <TextView
+                                android:id="@+id/btnCustomWater"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="custom"
+                                android:textSize="10sp"
+                                android:textColor="@color/primaryBlue"
+                                android:padding="4dp" />
+                        </LinearLayout>
 
                         <TextView
                             android:id="@+id/tvWaterValue"
@@ -444,17 +403,19 @@
                             android:layout_height="wrap_content"
                             android:layout_marginTop="12dp"
                             android:orientation="horizontal">
+
                             <com.google.android.material.button.MaterialButton
                                 android:id="@+id/btnQuickWater250"
                                 style="@style/Widget.MaterialComponents.Button.TextButton"
                                 android:layout_width="0dp"
                                 android:layout_height="32dp"
                                 android:layout_weight="1"
-                                android:text="+250"
-                                android:textSize="10sp"
                                 android:padding="0dp"
-                                app:cornerRadius="8dp"
-                                app:backgroundTint="@color/lightBlue"/>
+                                android:text="+250ml"
+                                android:textSize="9sp"
+                                app:backgroundTint="@color/lightBlue"
+                                app:cornerRadius="8dp" />
+
                             <com.google.android.material.button.MaterialButton
                                 android:id="@+id/btnQuickWater500"
                                 style="@style/Widget.MaterialComponents.Button.TextButton"
@@ -462,19 +423,20 @@
                                 android:layout_height="32dp"
                                 android:layout_weight="1"
                                 android:layout_marginStart="4dp"
-                                android:text="+500"
-                                android:textSize="10sp"
                                 android:padding="0dp"
-                                app:cornerRadius="8dp"
-                                app:backgroundTint="@color/lightBlue"/>
+                                android:text="+500ml"
+                                android:textSize="9sp"
+                                app:backgroundTint="@color/lightBlue"
+                                app:cornerRadius="8dp" />
                         </LinearLayout>
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
+                <!-- SLEEP CARD -->
                 <com.google.android.material.card.MaterialCardView
                     android:id="@+id/cardSleep"
                     android:layout_width="0dp"
-                    android:layout_height="wrap_content"
+                    android:layout_height="match_parent"
                     android:layout_weight="1"
                     android:clickable="true"
                     android:focusable="true"
@@ -484,16 +446,23 @@
 
                     <LinearLayout
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
+                        android:layout_height="match_parent"
                         android:orientation="vertical"
                         android:padding="16dp">
 
-                        <TextView
-                            android:layout_width="wrap_content"
+                        <LinearLayout
+                            android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:text="@string/sleep_label"
-                            android:textColor="@color/grayText"
-                            android:textSize="12sp" />
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical">
+
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="@string/sleep_label"
+                                android:textColor="@color/grayText"
+                                android:textSize="12sp" />
+                        </LinearLayout>
 
                         <TextView
                             android:id="@+id/tvSleepValue"
@@ -514,14 +483,23 @@
                             android:progress="0"
                             android:progressTint="#9C27B0" />
 
-                        <TextView
+                        <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="12dp"
-                            android:text="Tap to log"
-                            android:textSize="10sp"
-                            android:gravity="center"
-                            android:textColor="@color/grayText"/>
+                            android:orientation="horizontal">
+
+                            <com.google.android.material.button.MaterialButton
+                                android:id="@+id/btnLogSleep"
+                                style="@style/Widget.MaterialComponents.Button.TextButton"
+                                android:layout_width="match_parent"
+                                android:layout_height="32dp"
+                                android:padding="0dp"
+                                android:text="Log Sleep"
+                                android:textSize="9sp"
+                                app:backgroundTint="#F3E5F5"
+                                app:cornerRadius="8dp" />
+                        </LinearLayout>
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
             </LinearLayout>
@@ -550,18 +528,24 @@
                     android:orientation="vertical"
                     android:padding="8dp">
 
-                    <!-- Breakfast Item -->
+                    <!-- Breakfast Row -->
                     <LinearLayout
+                        android:id="@+id/layoutBreakfast"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="horizontal"
                         android:padding="12dp"
-                        android:gravity="center_vertical">
+                        android:gravity="center_vertical"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:background="?attr/selectableItemBackground">
+
                         <LinearLayout
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:orientation="vertical">
+
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
@@ -569,6 +553,7 @@
                                 android:textColor="@color/darkText"
                                 android:textSize="15sp"
                                 android:textStyle="bold" />
+
                             <TextView
                                 android:id="@+id/tvBreakfastInfo"
                                 android:layout_width="wrap_content"
@@ -579,6 +564,7 @@
                                 android:maxLines="1"
                                 android:ellipsize="end" />
                         </LinearLayout>
+
                         <TextView
                             android:id="@+id/btnAddBreakfast"
                             android:layout_width="wrap_content"
@@ -588,20 +574,31 @@
                             android:textStyle="bold"
                             android:padding="8dp" />
                     </LinearLayout>
-                    <View android:layout_width="match_parent" android:layout_height="1dp" android:background="@color/mealStroke" android:layout_marginHorizontal="12dp" />
 
-                    <!-- Lunch Item -->
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:background="@color/mealStroke"
+                        android:layout_marginHorizontal="12dp" />
+
+                    <!-- Lunch Row -->
                     <LinearLayout
+                        android:id="@+id/layoutLunch"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="horizontal"
                         android:padding="12dp"
-                        android:gravity="center_vertical">
+                        android:gravity="center_vertical"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:background="?attr/selectableItemBackground">
+
                         <LinearLayout
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:orientation="vertical">
+
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
@@ -609,6 +606,7 @@
                                 android:textColor="@color/darkText"
                                 android:textSize="15sp"
                                 android:textStyle="bold" />
+
                             <TextView
                                 android:id="@+id/tvLunchInfo"
                                 android:layout_width="wrap_content"
@@ -619,6 +617,7 @@
                                 android:maxLines="1"
                                 android:ellipsize="end" />
                         </LinearLayout>
+
                         <TextView
                             android:id="@+id/btnAddLunch"
                             android:layout_width="wrap_content"
@@ -628,20 +627,31 @@
                             android:textStyle="bold"
                             android:padding="8dp" />
                     </LinearLayout>
-                    <View android:layout_width="match_parent" android:layout_height="1dp" android:background="@color/mealStroke" android:layout_marginHorizontal="12dp" />
 
-                    <!-- Dinner Item -->
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:background="@color/mealStroke"
+                        android:layout_marginHorizontal="12dp" />
+
+                    <!-- Dinner Row -->
                     <LinearLayout
+                        android:id="@+id/layoutDinner"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="horizontal"
                         android:padding="12dp"
-                        android:gravity="center_vertical">
+                        android:gravity="center_vertical"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:background="?attr/selectableItemBackground">
+
                         <LinearLayout
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:orientation="vertical">
+
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
@@ -649,6 +659,7 @@
                                 android:textColor="@color/darkText"
                                 android:textSize="15sp"
                                 android:textStyle="bold" />
+
                             <TextView
                                 android:id="@+id/tvDinnerInfo"
                                 android:layout_width="wrap_content"
@@ -659,6 +670,7 @@
                                 android:maxLines="1"
                                 android:ellipsize="end" />
                         </LinearLayout>
+
                         <TextView
                             android:id="@+id/btnAddDinner"
                             android:layout_width="wrap_content"
@@ -668,20 +680,31 @@
                             android:textStyle="bold"
                             android:padding="8dp" />
                     </LinearLayout>
-                    <View android:layout_width="match_parent" android:layout_height="1dp" android:background="@color/mealStroke" android:layout_marginHorizontal="12dp" />
 
-                    <!-- Snacks Item -->
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:background="@color/mealStroke"
+                        android:layout_marginHorizontal="12dp" />
+
+                    <!-- Snacks Row -->
                     <LinearLayout
+                        android:id="@+id/layoutSnacks"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="horizontal"
                         android:padding="12dp"
-                        android:gravity="center_vertical">
+                        android:gravity="center_vertical"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:background="?attr/selectableItemBackground">
+
                         <LinearLayout
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:orientation="vertical">
+
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
@@ -689,6 +712,7 @@
                                 android:textColor="@color/darkText"
                                 android:textSize="15sp"
                                 android:textStyle="bold" />
+
                             <TextView
                                 android:id="@+id/tvSnacksInfo"
                                 android:layout_width="wrap_content"
@@ -699,6 +723,7 @@
                                 android:maxLines="1"
                                 android:ellipsize="end" />
                         </LinearLayout>
+
                         <TextView
                             android:id="@+id/btnAddSnacks"
                             android:layout_width="wrap_content"

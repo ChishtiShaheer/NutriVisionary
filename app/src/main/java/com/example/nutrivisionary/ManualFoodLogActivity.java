@@ -3,7 +3,6 @@ package com.example.nutrivisionary;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -72,25 +71,19 @@ public class ManualFoodLogActivity extends AppCompatActivity {
 
     private void loadFoodDatabase() {
         foodList = new ArrayList<>();
-        // Professional Schema: Name, Kcal, P, C, F, VitC (mg), VitD (mcg), Zinc (mg)
-        foodList.add(new FoodItem("Oatmeal", 150, 6.0, 27.0, 3.0, 0.0, 0.0, 1.2));
-        foodList.add(new FoodItem("Chicken Breast (100g)", 165, 31.0, 0.0, 4.0, 0.0, 0.0, 1.0));
-        foodList.add(new FoodItem("Brown Rice (1 cup)", 215, 5.0, 45.0, 2.0, 0.0, 0.0, 1.5));
-        foodList.add(new FoodItem("Banana", 105, 1.0, 27.0, 0.0, 10.3, 0.0, 0.2));
-        foodList.add(new FoodItem("Greek Yogurt", 100, 10.0, 6.0, 0.0, 0.5, 0.1, 0.6));
-        foodList.add(new FoodItem("Egg (Large)", 70, 6.0, 0.0, 5.0, 0.0, 1.1, 0.6));
-        foodList.add(new FoodItem("Almonds (28g)", 160, 6.0, 6.0, 14.0, 0.0, 0.0, 1.0));
-        foodList.add(new FoodItem("Avocado", 160, 2.0, 9.0, 15.0, 10.0, 0.0, 0.6));
-        foodList.add(new FoodItem("Salmon (100g)", 208, 20.0, 0.0, 13.0, 0.0, 15.0, 0.5));
-        foodList.add(new FoodItem("Apple", 95, 0.0, 25.0, 0.0, 4.6, 0.0, 0.1));
-        foodList.add(new FoodItem("Orange", 62, 1.2, 15.0, 0.2, 70.0, 0.0, 0.1));
-        foodList.add(new FoodItem("Steak (100g)", 250, 26.0, 0.0, 15.0, 0.0, 0.0, 5.0));
-        
-        // Items to help complete the Immunity Shield (Higher mineral values)
-        foodList.add(new FoodItem("Immunity Booster Shot", 40, 0.0, 10.0, 0.0, 80.0, 2.0, 1.0));
-        foodList.add(new FoodItem("Mineral Rich Salad", 180, 5.0, 12.0, 8.0, 45.0, 5.0, 4.0));
-        foodList.add(new FoodItem("Zinc+ Supplement", 0, 0.0, 0.0, 0.0, 0.0, 0.0, 10.0));
-        foodList.add(new FoodItem("Vitamin D3 Supplement", 0, 0.0, 0.0, 0.0, 0.0, 20.0, 0.0));
+        foodList.add(new FoodItem("Oatmeal", 150, 6.0, 27.0, 3.0));
+        foodList.add(new FoodItem("Chicken Breast (100g)", 165, 31.0, 0.0, 4.0));
+        foodList.add(new FoodItem("Brown Rice (1 cup)", 215, 5.0, 45.0, 2.0));
+        foodList.add(new FoodItem("Banana", 105, 1.0, 27.0, 0.0));
+        foodList.add(new FoodItem("Greek Yogurt", 100, 10.0, 6.0, 0.0));
+        foodList.add(new FoodItem("Egg (Large)", 70, 6.0, 0.0, 5.0));
+        foodList.add(new FoodItem("Almonds (28g)", 160, 6.0, 6.0, 14.0));
+        foodList.add(new FoodItem("Avocado", 160, 2.0, 9.0, 15.0));
+        foodList.add(new FoodItem("Salmon (100g)", 208, 20.0, 0.0, 13.0));
+        foodList.add(new FoodItem("Apple", 95, 0.0, 25.0, 0.0));
+        foodList.add(new FoodItem("Orange", 62, 1.2, 15.0, 0.2));
+        foodList.add(new FoodItem("Steak (100g)", 250, 26.0, 0.0, 15.0));
+        foodList.add(new FoodItem("Healthy Salad", 120, 3.0, 10.0, 5.0));
 
         filteredList = new ArrayList<>(foodList);
         adapter = new FoodAdapter(filteredList);
@@ -110,7 +103,7 @@ public class ManualFoodLogActivity extends AppCompatActivity {
     private void logFood(FoodItem food) {
         String uid = FirebaseAuth.getInstance().getUid();
         if (uid == null) {
-            Toast.makeText(this, "Session expired. Please log in.", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Not logged in", Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -125,21 +118,17 @@ public class ManualFoodLogActivity extends AppCompatActivity {
         update.put("consumedProtein", FieldValue.increment(food.protein));
         update.put("consumedCarbs", FieldValue.increment(food.carbs));
         update.put("consumedFat", FieldValue.increment(food.fat));
-        update.put("vitC", FieldValue.increment(food.vitC));
-        update.put("vitD", FieldValue.increment(food.vitD));
-        update.put("zinc", FieldValue.increment(food.zinc));
         update.put(field, FieldValue.arrayUnion(logEntry));
         update.put("lastUpdated", FieldValue.serverTimestamp());
 
-        // Use ManualFoodLogActivity.this context for reliable Toast show
         db.collection("users").document(uid).collection("logs").document(today)
                 .set(update, SetOptions.merge())
                 .addOnSuccessListener(aVoid -> {
+                    setResult(RESULT_OK);
                     Toast.makeText(ManualFoodLogActivity.this, food.name + " added successfully!", Toast.LENGTH_SHORT).show();
                     finish();
                 })
                 .addOnFailureListener(e -> {
-                    Log.e("ManualFoodLog", "Error logging food", e);
                     Toast.makeText(ManualFoodLogActivity.this, "Log failed. Please try again.", Toast.LENGTH_SHORT).show();
                 });
     }
@@ -148,10 +137,8 @@ public class ManualFoodLogActivity extends AppCompatActivity {
         String name;
         int kcal;
         double protein, carbs, fat;
-        double vitC, vitD, zinc;
-        FoodItem(String name, int kcal, double protein, double carbs, double fat, double vitC, double vitD, double zinc) {
+        FoodItem(String name, int kcal, double protein, double carbs, double fat) {
             this.name = name; this.kcal = kcal; this.protein = protein; this.carbs = carbs; this.fat = fat;
-            this.vitC = vitC; this.vitD = vitD; this.zinc = zinc;
         }
     }
 

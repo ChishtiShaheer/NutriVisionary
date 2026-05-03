@@ -143,7 +143,7 @@ public class ProgressAnalyticsActivity extends AppCompatActivity {
             LinearLayout item = new LinearLayout(this);
             item.setOrientation(LinearLayout.VERTICAL);
             item.setGravity(Gravity.CENTER);
-            
+
             TextView tv = new TextView(this);
             tv.setText(days[i]);
             tv.setTextSize(10);
@@ -188,7 +188,7 @@ public class ProgressAnalyticsActivity extends AppCompatActivity {
 
         heatmapGrid.setRowCount(ROWS);
         heatmapGrid.setColumnCount(TOTAL_COLS);
-        heatmapGrid.setOrientation(GridLayout.VERTICAL); 
+        heatmapGrid.setOrientation(GridLayout.VERTICAL);
 
         SimpleDateFormat dateSdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
         SimpleDateFormat monthSdf = new SimpleDateFormat("MMM", Locale.getDefault());

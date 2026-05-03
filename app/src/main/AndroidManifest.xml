@@ -4,6 +4,8 @@
 
     <uses-feature android:name="android.hardware.camera.any" />
     <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <application
         android:allowBackup="true"
@@ -13,43 +15,25 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
+        android:usesCleartextTraffic="true"
+        android:networkSecurityConfig="@xml/network_security_config"
         android:theme="@style/Theme.NutriVisionary">
-        <activity
-            android:name=".ManualFoodLogActivity"
-            android:exported="false" />
-        <activity
-            android:name=".SettingsActivity"
-            android:exported="false" />
-        <activity
-            android:name=".ProgressAnalyticsActivity"
-            android:exported="false" />
-        <activity
-            android:name=".ChatbotActivity"
-            android:exported="false" />
-        <activity
-            android:name=".MealPlannerActivity"
-            android:exported="false" />
-        <activity
-            android:name=".ScanFoodActivity"
-            android:exported="false" />
-        <activity
-            android:name=".HomeDashboardActivity"
-            android:exported="false" />
-        <activity
-            android:name=".ProfileSetupActivity"
-            android:exported="false" />
-        <activity
-            android:name=".SignupActivity"
-            android:exported="false" />
-        <activity
-            android:name=".LoginActivity"
-            android:exported="false" />
+
+        <activity android:name=".ManualFoodLogActivity" android:exported="false" />
+        <activity android:name=".SettingsActivity" android:exported="false" />
+        <activity android:name=".ProgressAnalyticsActivity" android:exported="false" />
+        <activity android:name=".ChatbotActivity" android:exported="false" />
+        <activity android:name=".MealPlannerActivity" android:exported="false" />
+        <activity android:name=".ScanFoodActivity" android:exported="false" />
+        <activity android:name=".HomeDashboardActivity" android:exported="false" />
+        <activity android:name=".ProfileSetupActivity" android:exported="false" />
+        <activity android:name=".SignupActivity" android:exported="false" />
+        <activity android:name=".LoginActivity" android:exported="false" />
         <activity
             android:name=".SplashScreenActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>

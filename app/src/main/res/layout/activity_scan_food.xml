@@ -17,7 +17,8 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:scaleType="centerCrop"
-        android:visibility="gone" />
+        android:visibility="gone"
+        android:contentDescription="Captured Image" />
 
     <!-- Dark Overlay for better visibility of UI -->
     <View
@@ -138,7 +139,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
                 android:orientation="horizontal"
-                android:weightSum="3">
+                android:weightSum="4">
 
                 <LinearLayout
                     android:layout_width="0dp"
@@ -149,16 +150,16 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Calories"
+                        android:text="Cals"
                         android:textColor="@color/grayText"
-                        android:textSize="12sp" />
+                        android:textSize="10sp" />
                     <TextView
                         android:id="@+id/tvResultCalories"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="450 kcal"
+                        android:text="0"
                         android:textColor="@color/darkText"
-                        android:textSize="16sp"
+                        android:textSize="14sp"
                         android:textStyle="bold" />
                 </LinearLayout>
 
@@ -173,14 +174,14 @@
                         android:layout_height="wrap_content"
                         android:text="Protein"
                         android:textColor="@color/grayText"
-                        android:textSize="12sp" />
+                        android:textSize="10sp" />
                     <TextView
                         android:id="@+id/tvResultProtein"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="35g"
+                        android:text="0g"
                         android:textColor="@color/macroProtein"
-                        android:textSize="16sp"
+                        android:textSize="14sp"
                         android:textStyle="bold" />
                 </LinearLayout>
 
@@ -195,14 +196,36 @@
                         android:layout_height="wrap_content"
                         android:text="Carbs"
                         android:textColor="@color/grayText"
-                        android:textSize="12sp" />
+                        android:textSize="10sp" />
                     <TextView
                         android:id="@+id/tvResultCarbs"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="12g"
+                        android:text="0g"
                         android:textColor="@color/macroCarbs"
-                        android:textSize="16sp"
+                        android:textSize="14sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:orientation="vertical">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Fat"
+                        android:textColor="@color/grayText"
+                        android:textSize="10sp" />
+                    <TextView
+                        android:id="@+id/tvResultFat"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="0g"
+                        android:textColor="@color/macroFat"
+                        android:textSize="14sp"
                         android:textStyle="bold" />
                 </LinearLayout>
 

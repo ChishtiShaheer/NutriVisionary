@@ -6,14 +6,14 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
+import android.util.Base64;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.camera.core.CameraSelector;
@@ -25,55 +25,97 @@ import androidx.camera.lifecycle.ProcessCameraProvider;
 import androidx.camera.view.PreviewView;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.SetOptions;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
+
 public class ScanFoodActivity extends AppCompatActivity {
 
     private static final String TAG = "ScanFoodActivity";
-    private static final int REQUEST_CODE_PERMISSIONS = 10;
-    private static final String[] REQUIRED_PERMISSIONS = new String[]{Manifest.permission.CAMERA};
+    private static final int    CAMERA_PERM_CODE = 10;
 
-    private PreviewView viewFinder;
-    private ImageView ivCapturedImage;
+    // ── gemini-2.0-flash: stable multimodal model, supports vision ──
+    // gemini-1.0-pro   → REMOVED, always 404, do not use
+    // gemini-1.5-flash → works but older generation
+    // gemini-2.0-flash → current stable release, best balance of speed + quality
+    private static final String GEMINI_API_KEY = "AIzaSyCazWtsFIImCOW47w_G-szFPN-TlWeqjlU";
+    private static final String GEMINI_MODEL   = "gemini-2.0-flash";
+    private static final String API_URL =
+            "https://generativelanguage.googleapis.com/v1beta/models/"
+                    + GEMINI_MODEL + ":generateContent?key=" + GEMINI_API_KEY;
+    // ────────────────────────────────────────────────────────────────
+
+    // Views
+    private PreviewView          viewFinder;
+    private ImageView            ivCapturedImage;
+    private View                 btnBack, viewfinderFrame;
     private FloatingActionButton fabCapture;
-    private MaterialButton btnRetake, btnAnalyze, btnLogFood;
-    private LinearLayout layoutProcessing;
-    private MaterialCardView layoutResult;
-    private ImageView btnBack;
-    private View viewfinderFrame;
-    private TextView tvInstruction;
+    private MaterialButton       btnRetake, btnAnalyze, btnLogFood;
+    private LinearLayout         layoutProcessing;
+    private MaterialCardView     layoutResult;
+    private TextView             tvInstruction;
+    private TextView             tvResultFoodName, tvResultCalories,
+            tvResultProtein, tvResultCarbs,
+            tvResultFat, tvResultDetails;
 
-    private TextView tvResultFoodName, tvResultCalories, tvResultProtein, tvResultCarbs, tvResultDetails;
-
-    private ImageCapture imageCapture;
-    private ExecutorService cameraExecutor;
+    // Camera
+    private ImageCapture          imageCapture;
+    private ExecutorService       cameraExecutor;
     private ProcessCameraProvider cameraProvider;
+    private Bitmap                capturedBitmap;
 
-    private FirebaseAuth mAuth;
+    // Firebase
+    private FirebaseAuth      mAuth;
     private FirebaseFirestore db;
-    
-    private int lastResultKcal = 0;
-    private int lastResultProtein = 0;
-    private int lastResultCarbs = 0;
-    private String lastResultName = "";
+
+    // HTTP — longer timeout for vision requests
+    private final OkHttpClient httpClient = new OkHttpClient.Builder()
+            .connectTimeout(30, java.util.concurrent.TimeUnit.SECONDS)
+            .writeTimeout(60,  java.util.concurrent.TimeUnit.SECONDS)
+            .readTimeout(90,   java.util.concurrent.TimeUnit.SECONDS)
+            .build();
+
+    // Last scanned result
+    private String lastResultName    = "";
+    private double lastResultKcal    = 0;
+    private double lastResultProtein = 0;
+    private double lastResultCarbs   = 0;
+    private double lastResultFat     = 0;
+
     private String mealType = "Snacks";
+
+    // ─────────────────────────────────────────────────────────────
+    // LIFECYCLE
+    // ─────────────────────────────────────────────────────────────
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -81,215 +123,447 @@ public class ScanFoodActivity extends AppCompatActivity {
         setContentView(R.layout.activity_scan_food);
 
         mAuth = FirebaseAuth.getInstance();
-        db = FirebaseFirestore.getInstance();
+        db    = FirebaseFirestore.getInstance();
 
-        mealType = getIntent().getStringExtra("mealType");
-        if (mealType == null) mealType = "Snacks";
+        String extra = getIntent().getStringExtra("mealType");
+        mealType = extra != null ? extra : "Snacks";
 
-        viewFinder = findViewById(R.id.viewFinder);
-        ivCapturedImage = findViewById(R.id.ivCapturedImage);
-        fabCapture = findViewById(R.id.fabCapture);
-        btnRetake = findViewById(R.id.btnRetake);
-        btnAnalyze = findViewById(R.id.btnAnalyze);
-        btnLogFood = findViewById(R.id.btnLogFood);
-        layoutProcessing = findViewById(R.id.layoutProcessing);
-        layoutResult = findViewById(R.id.layoutResult);
-        btnBack = findViewById(R.id.btnBack);
-        viewfinderFrame = findViewById(R.id.viewfinderFrame);
-        tvInstruction = findViewById(R.id.tvInstruction);
-
-        tvResultFoodName = findViewById(R.id.tvResultFoodName);
-        tvResultCalories = findViewById(R.id.tvResultCalories);
-        tvResultProtein = findViewById(R.id.tvResultProtein);
-        tvResultCarbs = findViewById(R.id.tvResultCarbs);
-        tvResultDetails = findViewById(R.id.tvResultDetails);
-
-        btnBack.setOnClickListener(v -> finish());
-        btnRetake.setOnClickListener(v -> resetCamera());
-        btnAnalyze.setOnClickListener(v -> startAnalysis());
-        btnLogFood.setOnClickListener(v -> logFoodToFirebase());
+        bindViews();
+        setupClickListeners();
 
         if (allPermissionsGranted()) {
             startCamera();
         } else {
-            ActivityCompat.requestPermissions(this, REQUIRED_PERMISSIONS, REQUEST_CODE_PERMISSIONS);
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.CAMERA}, CAMERA_PERM_CODE);
         }
-
-        fabCapture.setOnClickListener(v -> takePhoto());
         cameraExecutor = Executors.newSingleThreadExecutor();
-        
-        btnLogFood.setText("Log to " + mealType);
     }
 
+    // ─────────────────────────────────────────────────────────────
+    // VIEWS & CLICKS
+    // ─────────────────────────────────────────────────────────────
+
+    private void bindViews() {
+        viewFinder       = findViewById(R.id.viewFinder);
+        ivCapturedImage  = findViewById(R.id.ivCapturedImage);
+        fabCapture       = findViewById(R.id.fabCapture);
+        btnRetake        = findViewById(R.id.btnRetake);
+        btnAnalyze       = findViewById(R.id.btnAnalyze);
+        btnLogFood       = findViewById(R.id.btnLogFood);
+        layoutProcessing = findViewById(R.id.layoutProcessing);
+        layoutResult     = findViewById(R.id.layoutResult);
+        btnBack          = findViewById(R.id.btnBack);
+        viewfinderFrame  = findViewById(R.id.viewfinderFrame);
+        tvInstruction    = findViewById(R.id.tvInstruction);
+
+        tvResultFoodName = findViewById(R.id.tvResultFoodName);
+        tvResultCalories = findViewById(R.id.tvResultCalories);
+        tvResultProtein  = findViewById(R.id.tvResultProtein);
+        tvResultCarbs    = findViewById(R.id.tvResultCarbs);
+        tvResultFat      = findViewById(R.id.tvResultFat);
+        tvResultDetails  = findViewById(R.id.tvResultDetails);
+    }
+
+    private void setupClickListeners() {
+        if (btnBack     != null) btnBack.setOnClickListener(v -> finish());
+        if (fabCapture  != null) fabCapture.setOnClickListener(v -> takePhoto());
+        if (btnRetake   != null) btnRetake.setOnClickListener(v -> resetCamera());
+        if (btnAnalyze  != null) btnAnalyze.setOnClickListener(v -> startAnalysis());
+        if (btnLogFood  != null) {
+            btnLogFood.setText(String.format("Log to %s", mealType));
+            btnLogFood.setOnClickListener(v -> logFoodToFirebase());
+        }
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // CAMERA
+    // ─────────────────────────────────────────────────────────────
+
     private void startCamera() {
-        ListenableFuture<ProcessCameraProvider> cameraProviderFuture = ProcessCameraProvider.getInstance(this);
-        cameraProviderFuture.addListener(() -> {
+        ListenableFuture<ProcessCameraProvider> future =
+                ProcessCameraProvider.getInstance(this);
+
+        future.addListener(() -> {
             try {
-                cameraProvider = cameraProviderFuture.get();
+                cameraProvider = future.get();
                 Preview preview = new Preview.Builder().build();
                 preview.setSurfaceProvider(viewFinder.getSurfaceProvider());
+
                 imageCapture = new ImageCapture.Builder()
                         .setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)
                         .build();
-                CameraSelector cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA;
+
                 cameraProvider.unbindAll();
-                cameraProvider.bindToLifecycle(this, cameraSelector, preview, imageCapture);
+                cameraProvider.bindToLifecycle(
+                        this, CameraSelector.DEFAULT_BACK_CAMERA, preview, imageCapture);
+
             } catch (ExecutionException | InterruptedException e) {
-                Toast.makeText(this, "Camera error", Toast.LENGTH_SHORT).show();
+                Log.e(TAG, "Camera bind error", e);
+                Toast.makeText(this, "Camera error: " + e.getMessage(), Toast.LENGTH_LONG).show();
             }
         }, ContextCompat.getMainExecutor(this));
     }
 
     private void takePhoto() {
-        if (imageCapture == null) return;
-        imageCapture.takePicture(ContextCompat.getMainExecutor(this), new ImageCapture.OnImageCapturedCallback() {
-            @Override
-            public void onCaptureSuccess(@NonNull ImageProxy image) {
-                Bitmap bitmap = imageProxyToBitmap(image);
-                image.close();
-                runOnUiThread(() -> showCapturedImage(bitmap));
-            }
-            @Override
-            public void onError(@NonNull ImageCaptureException exception) {
-                Toast.makeText(ScanFoodActivity.this, "Capture failed", Toast.LENGTH_SHORT).show();
-            }
-        });
+        if (imageCapture == null) {
+            Toast.makeText(this, "Camera not ready yet", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        imageCapture.takePicture(ContextCompat.getMainExecutor(this),
+                new ImageCapture.OnImageCapturedCallback() {
+                    @Override
+                    public void onCaptureSuccess(@NonNull ImageProxy image) {
+                        capturedBitmap = imageProxyToBitmap(image);
+                        image.close();
+                        showCapturedImage(capturedBitmap);
+                    }
+                    @Override
+                    public void onError(@NonNull ImageCaptureException e) {
+                        Log.e(TAG, "Capture error", e);
+                        Toast.makeText(ScanFoodActivity.this,
+                                "Capture failed: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                });
     }
 
     private Bitmap imageProxyToBitmap(ImageProxy image) {
         ByteBuffer buffer = image.getPlanes()[0].getBuffer();
         byte[] bytes = new byte[buffer.remaining()];
         buffer.get(bytes);
-        Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
-        Matrix matrix = new Matrix();
-        matrix.postRotate(image.getImageInfo().getRotationDegrees());
-        return Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
+        Bitmap bmp = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+        Matrix m = new Matrix();
+        m.postRotate(image.getImageInfo().getRotationDegrees());
+        return Bitmap.createBitmap(bmp, 0, 0, bmp.getWidth(), bmp.getHeight(), m, true);
     }
 
     private void showCapturedImage(Bitmap bitmap) {
         ivCapturedImage.setImageBitmap(bitmap);
         ivCapturedImage.setVisibility(View.VISIBLE);
         viewFinder.setVisibility(View.INVISIBLE);
-        viewfinderFrame.setVisibility(View.GONE);
-        tvInstruction.setVisibility(View.GONE);
+        if (viewfinderFrame != null) viewfinderFrame.setVisibility(View.GONE);
+        if (tvInstruction   != null) tvInstruction.setVisibility(View.GONE);
         fabCapture.setVisibility(View.GONE);
         btnRetake.setVisibility(View.VISIBLE);
         btnAnalyze.setVisibility(View.VISIBLE);
-        if (cameraProvider != null) cameraProvider.unbindAll();
+        if (layoutResult != null) layoutResult.setVisibility(View.GONE);
+        if (cameraProvider  != null) cameraProvider.unbindAll();
     }
 
     private void resetCamera() {
+        capturedBitmap = null;
+        lastResultName = ""; lastResultKcal = 0;
+        lastResultProtein = 0; lastResultCarbs = 0; lastResultFat = 0;
+
         ivCapturedImage.setVisibility(View.GONE);
         viewFinder.setVisibility(View.VISIBLE);
-        viewfinderFrame.setVisibility(View.VISIBLE);
-        tvInstruction.setVisibility(View.VISIBLE);
-        layoutResult.setVisibility(View.GONE);
+        if (viewfinderFrame  != null) viewfinderFrame.setVisibility(View.VISIBLE);
+        if (tvInstruction    != null) tvInstruction.setVisibility(View.VISIBLE);
+        if (layoutResult     != null) layoutResult.setVisibility(View.GONE);
+        if (layoutProcessing != null) layoutProcessing.setVisibility(View.GONE);
         fabCapture.setVisibility(View.VISIBLE);
         btnRetake.setVisibility(View.GONE);
-        btnAnalyze.setVisibility(View.GONE);
+        btnAnalyze.setVisibility(View.VISIBLE);
         btnAnalyze.setEnabled(true);
         btnRetake.setEnabled(true);
-        layoutProcessing.setVisibility(View.GONE);
         startCamera();
     }
 
+    // ─────────────────────────────────────────────────────────────
+    // VISION ANALYSIS
+    // ─────────────────────────────────────────────────────────────
+
     private void startAnalysis() {
+        if (capturedBitmap == null) {
+            Toast.makeText(this, "No image to analyse", Toast.LENGTH_SHORT).show();
+            return;
+        }
         btnRetake.setEnabled(false);
         btnAnalyze.setEnabled(false);
-        layoutProcessing.setVisibility(View.VISIBLE);
-        new Handler(Looper.getMainLooper()).postDelayed(() -> {
-            layoutProcessing.setVisibility(View.GONE);
-            lastResultName = "Grilled Chicken Salad";
-            lastResultKcal = 350;
-            lastResultProtein = 30;
-            lastResultCarbs = 15;
-            showResult(lastResultName, lastResultKcal + " kcal", lastResultProtein + "g", lastResultCarbs + "g", 
-                    "Excellent choice! High in protein and low in carbs. Perfect for your goals.");
-            btnRetake.setEnabled(true);
-            Toast.makeText(this, "Analysis complete", Toast.LENGTH_SHORT).show();
-        }, 2000);
+        if (layoutProcessing != null) layoutProcessing.setVisibility(View.VISIBLE);
+        callGeminiVision(capturedBitmap);
     }
 
-    private void showResult(String name, String cal, String protein, String carbs, String details) {
-        tvResultFoodName.setText(name);
-        tvResultCalories.setText(cal);
-        tvResultProtein.setText(protein);
-        tvResultCarbs.setText(carbs);
-        tvResultDetails.setText(details);
-        layoutResult.setVisibility(View.VISIBLE);
-        btnAnalyze.setVisibility(View.GONE);
+    private void callGeminiVision(Bitmap bitmap) {
+        // Scale down if too large to stay well under the 4 MB inline_data limit
+        Bitmap scaled = scaleBitmap(bitmap, 1024);
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        scaled.compress(Bitmap.CompressFormat.JPEG, 75, baos);
+        byte[] imgBytes    = baos.toByteArray();
+        String base64Image = Base64.encodeToString(imgBytes, Base64.NO_WRAP);
+        Log.d(TAG, "Image bytes: " + imgBytes.length);
+
+        try {
+            // Prompt: demand pure JSON, no markdown
+            String prompt =
+                    "You are a nutrition expert. Look at this food image and return ONLY a raw JSON "
+                            + "object — no markdown, no backticks, no explanation text before or after it. "
+                            + "Use exactly these keys:\n"
+                            + "{\"name\": string, \"calories\": integer, \"protein_g\": number, "
+                            + "\"carbs_g\": number, \"fat_g\": number, \"description\": string}\n"
+                            + "Give realistic values for a typical single serving. "
+                            + "If no food is visible, use name=\"Unknown Food\" and 0 for all numbers.";
+
+            JSONArray parts = new JSONArray();
+            parts.put(new JSONObject().put("text", prompt));
+            parts.put(new JSONObject()
+                    .put("inline_data", new JSONObject()
+                            .put("mime_type", "image/jpeg")
+                            .put("data", base64Image)));
+
+            JSONObject content = new JSONObject();
+            content.put("role",  "user");
+            content.put("parts", parts);
+
+            JSONArray contents = new JSONArray();
+            contents.put(content);
+
+            // responseMimeType forces Gemini to return JSON only (2.0-flash supports this)
+            JSONObject genConfig = new JSONObject();
+            genConfig.put("responseMimeType", "application/json");
+            genConfig.put("maxOutputTokens",  256);
+            genConfig.put("temperature",       0.1); // near-zero for factual data
+
+            JSONObject requestBody = new JSONObject();
+            requestBody.put("contents",         contents);
+            requestBody.put("generationConfig", genConfig);
+
+            Log.d(TAG, "→ Vision POST to " + API_URL);
+
+            RequestBody body = RequestBody.create(
+                    requestBody.toString(),
+                    MediaType.parse("application/json; charset=utf-8"));
+
+            Request request = new Request.Builder()
+                    .url(API_URL)
+                    .post(body)
+                    .addHeader("Content-Type", "application/json")
+                    .build();
+
+            httpClient.newCall(request).enqueue(new Callback() {
+                @Override
+                public void onFailure(@NonNull Call call, @NonNull IOException e) {
+                    Log.e(TAG, "Vision network failure", e);
+                    runOnUiThread(() -> {
+                        if (layoutProcessing != null) layoutProcessing.setVisibility(View.GONE);
+                        btnRetake.setEnabled(true);
+                        btnAnalyze.setEnabled(true);
+                        Toast.makeText(ScanFoodActivity.this,
+                                "Network error: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                    });
+                }
+
+                @Override
+                public void onResponse(@NonNull Call call, @NonNull Response response)
+                        throws IOException {
+                    String resStr = response.body() != null ? response.body().string() : "";
+                    int    code   = response.code();
+                    Log.d(TAG, "← HTTP " + code + " body: " + resStr);
+                    runOnUiThread(() -> handleVisionResponse(code, resStr));
+                }
+            });
+
+        } catch (Exception e) {
+            Log.e(TAG, "Vision request build error", e);
+            if (layoutProcessing != null) layoutProcessing.setVisibility(View.GONE);
+            btnRetake.setEnabled(true);
+            btnAnalyze.setEnabled(true);
+            Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
+        }
     }
+
+    /** Scale bitmap so its longest edge is at most maxDim pixels. */
+    private Bitmap scaleBitmap(Bitmap src, int maxDim) {
+        int w = src.getWidth(), h = src.getHeight();
+        if (w <= maxDim && h <= maxDim) return src;
+        float scale = Math.min((float) maxDim / w, (float) maxDim / h);
+        return Bitmap.createScaledBitmap(src, (int)(w*scale), (int)(h*scale), true);
+    }
+
+    private void handleVisionResponse(int httpCode, String resStr) {
+        if (layoutProcessing != null) layoutProcessing.setVisibility(View.GONE);
+        btnRetake.setEnabled(true);
+
+        // ── Diagnose non-200 errors clearly ──────────────────────
+        if (httpCode != 200) {
+            String hint;
+            switch (httpCode) {
+                case 400: hint = "Bad request — invalid image or request format"; break;
+                case 403: hint = "API key invalid or restricted"; break;
+                case 404: hint = "Model not found — check model name"; break;
+                case 429: hint = "Rate limit exceeded — wait a moment"; break;
+                case 500: hint = "Gemini server error — try again"; break;
+                default:  hint = "Unexpected error";
+            }
+            Log.e(TAG, "HTTP " + httpCode + " — " + hint + "\n" + resStr);
+            Toast.makeText(this,
+                    "Analysis failed (HTTP " + httpCode + "): " + hint,
+                    Toast.LENGTH_LONG).show();
+            btnAnalyze.setEnabled(true);
+            return;
+        }
+
+        try {
+            JSONObject json       = new JSONObject(resStr);
+
+            // Safety / blocking check
+            if (json.has("promptFeedback")) {
+                String block = json.getJSONObject("promptFeedback")
+                        .optString("blockReason","");
+                if (!block.isEmpty()) {
+                    Toast.makeText(this, "Image blocked: " + block, Toast.LENGTH_LONG).show();
+                    btnAnalyze.setEnabled(true);
+                    return;
+                }
+            }
+
+            JSONArray candidates = json.optJSONArray("candidates");
+            if (candidates == null || candidates.length() == 0) {
+                throw new Exception("No candidates in response");
+            }
+
+            String finishReason = candidates.getJSONObject(0).optString("finishReason","STOP");
+            if (finishReason.equals("SAFETY")) {
+                Toast.makeText(this, "Image blocked by safety filter", Toast.LENGTH_LONG).show();
+                btnAnalyze.setEnabled(true);
+                return;
+            }
+
+            String rawText = candidates.getJSONObject(0)
+                    .getJSONObject("content")
+                    .getJSONArray("parts")
+                    .getJSONObject(0)
+                    .getString("text")
+                    .trim();
+
+            Log.d(TAG, "Raw text from Gemini: " + rawText);
+
+            // Strip any markdown the model might add despite instructions
+            String jsonText = extractJsonObject(rawText);
+            Log.d(TAG, "Extracted JSON: " + jsonText);
+
+            JSONObject result = new JSONObject(jsonText);
+            lastResultName    = result.optString("name",        "Unknown Food");
+            lastResultKcal    = result.optDouble("calories",     0);
+            lastResultProtein = result.optDouble("protein_g",    0);
+            lastResultCarbs   = result.optDouble("carbs_g",      0);
+            lastResultFat     = result.optDouble("fat_g",        0);
+            String desc       = result.optString("description", "No details available.");
+
+            // Display results
+            if (tvResultFoodName != null) tvResultFoodName.setText(lastResultName);
+            if (tvResultCalories != null) tvResultCalories.setText(
+                    String.format(Locale.getDefault(), "%d kcal", (int) lastResultKcal));
+            if (tvResultProtein  != null) tvResultProtein.setText(
+                    String.format(Locale.getDefault(), "%.1fg", lastResultProtein));
+            if (tvResultCarbs    != null) tvResultCarbs.setText(
+                    String.format(Locale.getDefault(), "%.1fg", lastResultCarbs));
+            if (tvResultFat      != null) tvResultFat.setText(
+                    String.format(Locale.getDefault(), "%.1fg", lastResultFat));
+            if (tvResultDetails  != null) tvResultDetails.setText(desc);
+
+            if (layoutResult != null) layoutResult.setVisibility(View.VISIBLE);
+            if (btnAnalyze   != null) btnAnalyze.setVisibility(View.GONE);
+
+        } catch (Exception e) {
+            Log.e(TAG, "Parse error. Raw: " + resStr, e);
+            Toast.makeText(this,
+                    "Could not read food data. Try a clearer photo.", Toast.LENGTH_LONG).show();
+            btnAnalyze.setEnabled(true);
+        }
+    }
+
+    /**
+     * Robustly extracts the first complete {...} JSON object from a string
+     * that may contain surrounding markdown or explanatory text.
+     */
+    private String extractJsonObject(String text) throws Exception {
+        int start = text.indexOf('{');
+        int end   = text.lastIndexOf('}');
+        if (start == -1 || end == -1 || end <= start)
+            throw new Exception("No JSON object found in: " + text);
+        return text.substring(start, end + 1);
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // LOG TO FIREBASE — atomic, no pre-fetch
+    // ─────────────────────────────────────────────────────────────
 
     private void logFoodToFirebase() {
-        if (mAuth.getCurrentUser() == null) return;
-        btnLogFood.setEnabled(false);
-        String todayDate = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date());
-        String fieldName = "foods_" + mealType;
-        
-        db.collection("users").document(mAuth.getCurrentUser().getUid())
-                .collection("logs").document(todayDate).get()
-                .addOnSuccessListener(doc -> {
-                    int currentCals = 0, currentProtein = 0, currentCarbs = 0;
-                    double cVit = 0, dVit = 0, znc = 0;
-                    List<String> meals = new ArrayList<>();
-                    if (doc.exists()) {
-                        currentCals = doc.getLong("consumedKcal") != null ? doc.getLong("consumedKcal").intValue() : 0;
-                        currentProtein = doc.getLong("consumedProtein") != null ? doc.getLong("consumedProtein").intValue() : 0;
-                        currentCarbs = doc.getLong("consumedCarbs") != null ? doc.getLong("consumedCarbs").intValue() : 0;
-                        
-                        cVit = doc.getDouble("vitC") != null ? doc.getDouble("vitC") : 0.0;
-                        dVit = doc.getDouble("vitD") != null ? doc.getDouble("vitD") : 0.0;
-                        znc = doc.getDouble("zinc") != null ? doc.getDouble("zinc") : 0.0;
-                        
-                        List<String> existing = (List<String>) doc.get(fieldName);
-                        if (existing != null) meals.addAll(existing);
-                    }
-                    meals.add(lastResultName + " (" + lastResultKcal + " kcal)");
-                    Map<String, Object> update = new HashMap<>();
-                    update.put("consumedKcal", currentCals + lastResultKcal);
-                    update.put("consumedProtein", currentProtein + lastResultProtein);
-                    update.put("consumedCarbs", currentCarbs + lastResultCarbs);
-                    update.put(fieldName, meals);
-                    update.put("lastUpdated", new Date());
-                    
-                    // Add mock micronutrients (additive)
-                    update.put("vitC", cVit + 30.0); 
-                    update.put("vitD", dVit + 5.0); 
-                    update.put("zinc", znc + 4.0);
+        if (mAuth.getCurrentUser() == null) {
+            Toast.makeText(this, "Not signed in", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        if (lastResultName.isEmpty() || lastResultName.equals("Unknown Food") && lastResultKcal == 0) {
+            Toast.makeText(this, "No food identified to log", Toast.LENGTH_SHORT).show();
+            return;
+        }
 
-                    db.collection("users").document(mAuth.getCurrentUser().getUid())
-                            .collection("logs").document(todayDate)
-                            .set(update, SetOptions.merge())
-                            .addOnSuccessListener(aVoid -> {
-                                Toast.makeText(this, "Logged to " + mealType + "!", Toast.LENGTH_SHORT).show();
-                                finish();
-                            })
-                            .addOnFailureListener(e -> {
-                                btnLogFood.setEnabled(true);
-                                Toast.makeText(this, "Failed to log", Toast.LENGTH_SHORT).show();
-                            });
+        btnLogFood.setEnabled(false);
+
+        String uid       = mAuth.getCurrentUser().getUid();
+        String today     = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date());
+        String mealField = "foods_" + mealType;
+        String entry     = String.format(Locale.getDefault(),
+                "%s (%d kcal)", lastResultName, (int) lastResultKcal);
+
+        // FieldValue.increment is atomic — no pre-read needed, works even if
+        // the document doesn't exist yet (Firestore creates it on first .set+merge)
+        Map<String, Object> update = new HashMap<>();
+        update.put("consumedKcal",    FieldValue.increment(lastResultKcal));
+        update.put("consumedProtein", FieldValue.increment(lastResultProtein));
+        update.put("consumedCarbs",   FieldValue.increment(lastResultCarbs));
+        update.put("consumedFat",     FieldValue.increment(lastResultFat));
+        update.put(mealField,         FieldValue.arrayUnion(entry));
+        update.put("lastUpdated",     FieldValue.serverTimestamp());
+
+        db.collection("users").document(uid)
+                .collection("logs").document(today)
+                .set(update, SetOptions.merge())
+                .addOnSuccessListener(a -> {
+                    Toast.makeText(this,
+                            lastResultName + " logged to " + mealType + " ✓",
+                            Toast.LENGTH_SHORT).show();
+                    finish();
+                })
+                .addOnFailureListener(e -> {
+                    Log.e(TAG, "Firestore write failed", e);
+                    btnLogFood.setEnabled(true);
+                    Toast.makeText(this, "Failed to log: " + e.getMessage(),
+                            Toast.LENGTH_LONG).show();
                 });
     }
 
+    // ─────────────────────────────────────────────────────────────
+    // PERMISSIONS
+    // ─────────────────────────────────────────────────────────────
+
     private boolean allPermissionsGranted() {
-        for (String permission : REQUIRED_PERMISSIONS) {
-            if (ContextCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED) return false;
-        }
-        return true;
+        return ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
+                == PackageManager.PERMISSION_GRANTED;
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == REQUEST_CODE_PERMISSIONS) {
+    public void onRequestPermissionsResult(int code,
+                                           @NonNull String[] perms, @NonNull int[] results) {
+        super.onRequestPermissionsResult(code, perms, results);
+        if (code == CAMERA_PERM_CODE) {
             if (allPermissionsGranted()) startCamera();
-            else finish();
+            else {
+                Toast.makeText(this, "Camera permission is required", Toast.LENGTH_LONG).show();
+                finish();
+            }
         }
     }
+
+    // ─────────────────────────────────────────────────────────────
+    // LIFECYCLE
+    // ─────────────────────────────────────────────────────────────
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        cameraExecutor.shutdown();
+        if (cameraExecutor != null) cameraExecutor.shutdown();
     }
 }
