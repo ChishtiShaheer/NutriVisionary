@@ -80,6 +80,7 @@ public class LoginActivity extends AppCompatActivity {
         }
 
         btnSubmit.setEnabled(false);
+        btnSubmit.setText(isLoginMode ? "Logging in..." : "Creating account...");
 
         if (isLoginMode) {
             loginUser(email, password);
@@ -95,6 +96,7 @@ public class LoginActivity extends AppCompatActivity {
                         fetchUserDataAndProceed(mAuth.getCurrentUser());
                     } else {
                         btnSubmit.setEnabled(true);
+                        btnSubmit.setText("Login");
                         Toast.makeText(this, "Authentication failed: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
                     }
                 });
@@ -107,6 +109,7 @@ public class LoginActivity extends AppCompatActivity {
                         saveUserToFirestore(mAuth.getCurrentUser(), name);
                     } else {
                         btnSubmit.setEnabled(true);
+                        btnSubmit.setText("Create Account");
                         Toast.makeText(this, "Registration failed: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
                     }
                 });
@@ -122,12 +125,14 @@ public class LoginActivity extends AppCompatActivity {
         db.collection("users").document(user.getUid())
                 .set(userMap)
                 .addOnSuccessListener(aVoid -> {
+                    Toast.makeText(this, "Account created successfully!", Toast.LENGTH_SHORT).show();
                     saveToPrefs(name, user.getEmail(), false);
                     startActivity(new Intent(this, ProfileSetupActivity.class));
                     finish();
                 })
                 .addOnFailureListener(e -> {
                     btnSubmit.setEnabled(true);
+                    btnSubmit.setText("Create Account");
                     Toast.makeText(this, "Error saving user data", Toast.LENGTH_SHORT).show();
                 });
     }
@@ -140,6 +145,8 @@ public class LoginActivity extends AppCompatActivity {
                         Boolean isProfileComplete = documentSnapshot.getBoolean("isProfileComplete");
                         saveToPrefs(name, user.getEmail(), true);
                         
+                        Toast.makeText(this, "Welcome back, " + (name != null ? name : "user") + "!", Toast.LENGTH_SHORT).show();
+
                         if (isProfileComplete != null && isProfileComplete) {
                             goToDashboard();
                         } else {
@@ -150,7 +157,11 @@ public class LoginActivity extends AppCompatActivity {
                         goToDashboard();
                     }
                 })
-                .addOnFailureListener(e -> goToDashboard());
+                .addOnFailureListener(e -> {
+                    btnSubmit.setEnabled(true);
+                    btnSubmit.setText("Login");
+                    goToDashboard();
+                });
     }
 
     private void saveToPrefs(String name, String email, boolean loggedIn) {
@@ -163,7 +174,9 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void goToDashboard() {
-        startActivity(new Intent(this, HomeDashboardActivity.class));
+        Intent intent = new Intent(this, HomeDashboardActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
         finish();
     }
 

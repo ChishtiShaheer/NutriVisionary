@@ -132,82 +132,92 @@ public class ProfileSetupActivity extends AppCompatActivity {
             return;
         }
 
+        // Change button state
         saveProfileBtn.setEnabled(false);
         saveProfileBtn.setText("Saving...");
 
-        String name = etName.getText().toString().trim();
-        int age = Integer.parseInt(etAge.getText().toString().trim());
-        double weight = Double.parseDouble(etWeight.getText().toString().trim());
-        double height = Double.parseDouble(etHeight.getText().toString().trim());
-        double targetWeight = Double.parseDouble(etTargetWeight.getText().toString().trim());
-        double waterGoal = Double.parseDouble(etWaterGoal.getText().toString().trim());
-        double sleepGoal = Double.parseDouble(etSleepGoal.getText().toString().trim());
+        try {
+            String name = etName.getText().toString().trim();
+            int age = Integer.parseInt(etAge.getText().toString().trim());
+            double weight = Double.parseDouble(etWeight.getText().toString().trim());
+            double height = Double.parseDouble(etHeight.getText().toString().trim());
+            double targetWeight = Double.parseDouble(etTargetWeight.getText().toString().trim());
+            double waterGoal = Double.parseDouble(etWaterGoal.getText().toString().trim());
+            double sleepGoal = Double.parseDouble(etSleepGoal.getText().toString().trim());
 
-        String gender = getSelectedChipText(cgGender);
-        String activityLevel = getSelectedChipText(cgActivity);
-        String goal = getSelectedChipText(cgGoal);
-        String dietaryPref = getSelectedChipText(cgDiet);
+            String gender = getSelectedChipText(cgGender);
+            String activityLevel = getSelectedChipText(cgActivity);
+            String goal = getSelectedChipText(cgGoal);
+            String dietaryPref = getSelectedChipText(cgDiet);
 
-        // Nutrition logic
-        double bmr = (gender.equalsIgnoreCase("Male")) ? 
-                (10 * weight) + (6.25 * height) - (5 * age) + 5 :
-                (10 * weight) + (6.25 * height) - (5 * age) - 161;
+            // Nutrition logic
+            double bmr = (gender.equalsIgnoreCase("Male")) ? 
+                    (10 * weight) + (6.25 * height) - (5 * age) + 5 :
+                    (10 * weight) + (6.25 * height) - (5 * age) - 161;
 
-        double multiplier = 1.2;
-        if (activityLevel.contains("Moderate")) multiplier = 1.55;
-        else if (activityLevel.contains("Active")) multiplier = 1.725;
-        else if (activityLevel.contains("Athlete")) multiplier = 1.9;
-        
-        double tdee = bmr * multiplier;
-        int targetCals = (int) tdee;
-        if (goal.contains("Lose")) targetCals -= 500;
-        else if (goal.contains("Gain")) targetCals += 500;
+            double multiplier = 1.2;
+            if (activityLevel.contains("Moderate")) multiplier = 1.55;
+            else if (activityLevel.contains("Active")) multiplier = 1.725;
+            else if (activityLevel.contains("Athlete")) multiplier = 1.9;
+            
+            double tdee = bmr * multiplier;
+            int targetCals = (int) tdee;
+            if (goal.contains("Lose")) targetCals -= 500;
+            else if (goal.contains("Gain")) targetCals += 500;
 
-        int protein = (int) (weight * 2.0); 
-        int fat = (int) ((targetCals * 0.25) / 9);
-        int carbs = (targetCals - (protein * 4) - (fat * 9)) / 4;
+            int protein = (int) (weight * 2.0); 
+            int fat = (int) ((targetCals * 0.25) / 9);
+            int carbs = (targetCals - (protein * 4) - (fat * 9)) / 4;
 
-        Map<String, Object> profile = new HashMap<>();
-        profile.put("name", name);
-        profile.put("age", age);
-        profile.put("weight", weight);
-        profile.put("height", height);
-        profile.put("targetWeight", targetWeight);
-        profile.put("waterGoal", waterGoal);
-        profile.put("sleepGoal", sleepGoal);
-        profile.put("gender", gender);
-        profile.put("activityLevel", activityLevel);
-        profile.put("goal", goal);
-        profile.put("dietaryPreference", dietaryPref);
-        profile.put("targetKcal", targetCals);
-        profile.put("targetProtein", (double) protein);
-        profile.put("targetCarbs", (double) carbs);
-        profile.put("targetFat", (double) fat);
-        profile.put("isProfileComplete", true);
+            Map<String, Object> profile = new HashMap<>();
+            profile.put("name", name);
+            profile.put("age", age);
+            profile.put("weight", weight);
+            profile.put("height", height);
+            profile.put("targetWeight", targetWeight);
+            profile.put("waterGoal", waterGoal);
+            profile.put("sleepGoal", sleepGoal);
+            profile.put("gender", gender);
+            profile.put("activityLevel", activityLevel);
+            profile.put("goal", goal);
+            profile.put("dietaryPreference", dietaryPref);
+            profile.put("targetKcal", targetCals);
+            profile.put("targetProtein", (double) protein);
+            profile.put("targetCarbs", (double) carbs);
+            profile.put("targetFat", (double) fat);
+            profile.put("isProfileComplete", true);
 
-        db.collection("users").document(user.getUid())
-                .set(profile, SetOptions.merge())
-                .addOnSuccessListener(aVoid -> {
-                    SharedPreferences sharedPref = getSharedPreferences("NutriPrefs", Context.MODE_PRIVATE);
-                    sharedPref.edit()
-                            .putString("userName", name)
-                            .putBoolean("isLoggedIn", true)
-                            .putBoolean("isProfileComplete", true)
-                            .apply();
-                    
-                    Toast.makeText(ProfileSetupActivity.this, "Profile Saved Successfully!", Toast.LENGTH_SHORT).show();
-                    
-                    Intent intent = new Intent(ProfileSetupActivity.this, HomeDashboardActivity.class);
-                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                    startActivity(intent);
-                    finish();
-                })
-                .addOnFailureListener(e -> {
-                    Log.e("ProfileSetup", "Save failed", e);
-                    saveProfileBtn.setEnabled(true);
-                    saveProfileBtn.setText("Finish Setup");
-                    Toast.makeText(ProfileSetupActivity.this, "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
-                });
+            db.collection("users").document(user.getUid())
+                    .set(profile, SetOptions.merge())
+                    .addOnCompleteListener(task -> {
+                        if (task.isSuccessful()) {
+                            SharedPreferences sharedPref = getSharedPreferences("NutriPrefs", Context.MODE_PRIVATE);
+                            sharedPref.edit()
+                                    .putString("userName", name)
+                                    .putBoolean("isLoggedIn", true)
+                                    .putBoolean("isProfileComplete", true)
+                                    .apply();
+                            
+                            Toast.makeText(ProfileSetupActivity.this, "Profile Saved Successfully!", Toast.LENGTH_SHORT).show();
+                            
+                            Intent intent = new Intent(ProfileSetupActivity.this, HomeDashboardActivity.class);
+                            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                            startActivity(intent);
+                            finish();
+                        } else {
+                            // Revert button state on failure
+                            saveProfileBtn.setEnabled(true);
+                            saveProfileBtn.setText("Save Profile");
+                            String error = task.getException() != null ? task.getException().getMessage() : "Unknown error";
+                            Log.e("ProfileSetup", "Save failed: " + error);
+                            Toast.makeText(ProfileSetupActivity.this, "Error saving profile: " + error, Toast.LENGTH_LONG).show();
+                        }
+                    });
+        } catch (Exception e) {
+            saveProfileBtn.setEnabled(true);
+            saveProfileBtn.setText("Save Profile");
+            Toast.makeText(this, "Please ensure all numbers are valid", Toast.LENGTH_SHORT).show();
+        }
     }
 
     private String getSelectedChipText(ChipGroup chipGroup) {

@@ -4,11 +4,13 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.util.Log;
 import android.util.Patterns;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.firebase.auth.FirebaseAuth;
@@ -20,6 +22,7 @@ import java.util.Map;
 
 public class SignupActivity extends AppCompatActivity {
 
+    private static final String TAG = "SignupActivity";
     private EditText nameField, emailField, passwordField;
     private Button signupBtn;
     private FirebaseAuth mAuth;
@@ -58,22 +61,33 @@ public class SignupActivity extends AppCompatActivity {
                 return;
             }
 
+            // Set state to Saving
             signupBtn.setEnabled(false);
+            signupBtn.setText("Saving...");
+            Toast.makeText(this, "Creating your account...", Toast.LENGTH_SHORT).show();
+
             mAuth.createUserWithEmailAndPassword(email, password)
                     .addOnCompleteListener(this, task -> {
                         if (task.isSuccessful()) {
                             FirebaseUser user = mAuth.getCurrentUser();
-                            saveUserToFirestore(user, name);
+                            if (user != null) {
+                                saveUserToFirestore(user, name);
+                            } else {
+                                signupBtn.setEnabled(true);
+                                signupBtn.setText("Sign Up");
+                                Toast.makeText(SignupActivity.this, "Authentication succeeded but user is null", Toast.LENGTH_SHORT).show();
+                            }
                         } else {
                             signupBtn.setEnabled(true);
-                            Toast.makeText(SignupActivity.this, "Registration failed: " + task.getException().getMessage(),
-                                    Toast.LENGTH_SHORT).show();
+                            signupBtn.setText("Sign Up");
+                            String errorMsg = task.getException() != null ? task.getException().getMessage() : "Registration failed";
+                            Toast.makeText(SignupActivity.this, errorMsg, Toast.LENGTH_LONG).show();
                         }
                     });
         });
     }
 
-    private void saveUserToFirestore(FirebaseUser user, String name) {
+    private void saveUserToFirestore(@NonNull FirebaseUser user, String name) {
         Map<String, Object> userMap = new HashMap<>();
         userMap.put("name", name);
         userMap.put("email", user.getEmail());
@@ -82,19 +96,27 @@ public class SignupActivity extends AppCompatActivity {
 
         db.collection("users").document(user.getUid())
                 .set(userMap)
-                .addOnSuccessListener(aVoid -> {
-                    SharedPreferences sharedPref = getSharedPreferences("NutriPrefs", Context.MODE_PRIVATE);
-                    // INTELLIGENT FIX: Set isLoggedIn to true immediately after successful signup
-                    sharedPref.edit().putString("userName", name).putBoolean("isLoggedIn", true).apply();
-                    
-                    Intent intent = new Intent(SignupActivity.this, ProfileSetupActivity.class);
-                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                    startActivity(intent);
-                    finish();
-                })
-                .addOnFailureListener(e -> {
-                    signupBtn.setEnabled(true);
-                    Toast.makeText(SignupActivity.this, "Error saving user data", Toast.LENGTH_SHORT).show();
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        Toast.makeText(getApplicationContext(), "Account created successfully!", Toast.LENGTH_SHORT).show();
+                        
+                        SharedPreferences sharedPref = getSharedPreferences("NutriPrefs", Context.MODE_PRIVATE);
+                        sharedPref.edit()
+                                .putString("userName", name)
+                                .putBoolean("isLoggedIn", true)
+                                .apply();
+                        
+                        Intent intent = new Intent(SignupActivity.this, ProfileSetupActivity.class);
+                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                        startActivity(intent);
+                        finish();
+                    } else {
+                        signupBtn.setEnabled(true);
+                        signupBtn.setText("Sign Up");
+                        String errorMsg = task.getException() != null ? task.getException().getMessage() : "Error saving user data";
+                        Log.e(TAG, "Firestore error: " + errorMsg);
+                        Toast.makeText(SignupActivity.this, errorMsg, Toast.LENGTH_LONG).show();
+                    }
                 });
     }
 }

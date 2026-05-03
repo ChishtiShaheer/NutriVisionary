@@ -5,10 +5,11 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="horizontal"
-    android:paddingTop="4dp"
-    android:paddingBottom="4dp"
-    android:paddingStart="4dp"
-    android:paddingEnd="48dp">
+    android:paddingTop="6dp"
+    android:paddingBottom="6dp"
+    android:paddingStart="16dp"
+    android:paddingEnd="16dp"
+    android:gravity="center">
 
     <!-- Bot avatar -->
     <com.google.android.material.card.MaterialCardView
@@ -33,13 +34,14 @@
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:gravity="center">
 
         <com.google.android.material.card.MaterialCardView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:cardCornerRadius="18dp"
-            app:cardElevation="1dp"
+            app:cardCornerRadius="20dp"
+            app:cardElevation="2dp"
             app:cardBackgroundColor="@color/white"
             app:strokeWidth="0dp">
 
@@ -47,28 +49,22 @@
                 android:id="@+id/tvBotMessage"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:paddingHorizontal="14dp"
-                android:paddingVertical="10dp"
+                android:paddingHorizontal="16dp"
+                android:paddingVertical="12dp"
                 android:textColor="@color/darkText"
                 android:textSize="14sp"
                 android:lineSpacingExtra="2dp"
-                android:maxWidth="260dp" />
+                android:gravity="center"
+                android:maxWidth="280dp" />
         </com.google.android.material.card.MaterialCardView>
 
         <TextView
             android:id="@+id/tvBotTime"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="3dp"
-            android:layout_marginStart="4dp"
+            android:layout_marginTop="4dp"
             android:textColor="@color/slateGray"
             android:textSize="10sp" />
     </LinearLayout>
-
-    <!-- Spacer (optional but keeps symmetry) -->
-    <View
-        android:layout_width="0dp"
-        android:layout_height="1dp"
-        android:layout_weight="1" />
 
 </LinearLayout>
