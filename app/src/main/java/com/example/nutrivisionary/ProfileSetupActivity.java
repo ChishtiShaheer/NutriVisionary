@@ -6,8 +6,8 @@ import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.util.Log;
 import android.view.View;
-import android.widget.ProgressBar;
 import android.widget.Toast;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
@@ -30,8 +30,8 @@ public class ProfileSetupActivity extends AppCompatActivity {
 
     private ShapeableImageView ivProfilePhoto;
     private FloatingActionButton fabEditPhoto;
-    private TextInputEditText etName, etAge, etWeight, etHeight;
-    private ChipGroup cgGender, cgActivity, cgGoal;
+    private TextInputEditText etName, etAge, etWeight, etHeight, etTargetWeight, etWaterGoal, etSleepGoal;
+    private ChipGroup cgGender, cgActivity, cgGoal, cgDiet;
     private MaterialButton saveProfileBtn;
 
     private FirebaseAuth mAuth;
@@ -51,13 +51,19 @@ public class ProfileSetupActivity extends AppCompatActivity {
         etAge = findViewById(R.id.etAge);
         etWeight = findViewById(R.id.etWeight);
         etHeight = findViewById(R.id.etHeight);
+        etTargetWeight = findViewById(R.id.etTargetWeight);
+        etWaterGoal = findViewById(R.id.etWaterGoal);
+        etSleepGoal = findViewById(R.id.etSleepGoal);
+        
         cgGender = findViewById(R.id.cgGender);
         cgActivity = findViewById(R.id.cgActivity);
         cgGoal = findViewById(R.id.cgGoal);
+        cgDiet = findViewById(R.id.cgDiet);
         saveProfileBtn = findViewById(R.id.saveProfileBtn);
 
         SharedPreferences sharedPref = getSharedPreferences("NutriPrefs", Context.MODE_PRIVATE);
-        etName.setText(sharedPref.getString("userName", ""));
+        String name = sharedPref.getString("userName", "");
+        if (!name.isEmpty()) etName.setText(name);
 
         fabEditPhoto.setOnClickListener(v -> {
             Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
@@ -69,6 +75,44 @@ public class ProfileSetupActivity extends AppCompatActivity {
                 saveProfileToFirebase();
             }
         });
+
+        loadUserProfile();
+    }
+
+    private void loadUserProfile() {
+        FirebaseUser user = mAuth.getCurrentUser();
+        if (user == null) return;
+
+        db.collection("users").document(user.getUid()).get().addOnSuccessListener(doc -> {
+            if (doc.exists()) {
+                if (doc.contains("name")) etName.setText(doc.getString("name"));
+                if (doc.contains("age")) etAge.setText(String.valueOf(doc.getLong("age")));
+                if (doc.contains("weight")) etWeight.setText(String.valueOf(doc.get("weight")));
+                if (doc.contains("height")) etHeight.setText(String.valueOf(doc.get("height")));
+                if (doc.contains("targetWeight")) etTargetWeight.setText(String.valueOf(doc.get("targetWeight")));
+                if (doc.contains("waterGoal")) etWaterGoal.setText(String.valueOf(doc.get("waterGoal")));
+                if (doc.contains("sleepGoal")) etSleepGoal.setText(String.valueOf(doc.get("sleepGoal")));
+                
+                selectChipByText(cgGender, doc.getString("gender"));
+                selectChipByText(cgActivity, doc.getString("activityLevel"));
+                selectChipByText(cgGoal, doc.getString("goal"));
+                selectChipByText(cgDiet, doc.getString("dietaryPreference"));
+            }
+        });
+    }
+
+    private void selectChipByText(ChipGroup cg, String text) {
+        if (text == null) return;
+        for (int i = 0; i < cg.getChildCount(); i++) {
+            View v = cg.getChildAt(i);
+            if (v instanceof Chip) {
+                Chip chip = (Chip) v;
+                if (chip.getText().toString().equalsIgnoreCase(text)) {
+                    chip.setChecked(true);
+                    return;
+                }
+            }
+        }
     }
 
     private final ActivityResultLauncher<Intent> pickImageLauncher = registerForActivityResult(
@@ -83,44 +127,44 @@ public class ProfileSetupActivity extends AppCompatActivity {
 
     private void saveProfileToFirebase() {
         FirebaseUser user = mAuth.getCurrentUser();
-        if (user == null) return;
+        if (user == null) {
+            Toast.makeText(this, "Session expired. Log in again.", Toast.LENGTH_SHORT).show();
+            return;
+        }
 
         saveProfileBtn.setEnabled(false);
+        saveProfileBtn.setText("Saving...");
 
         String name = etName.getText().toString().trim();
         int age = Integer.parseInt(etAge.getText().toString().trim());
         double weight = Double.parseDouble(etWeight.getText().toString().trim());
         double height = Double.parseDouble(etHeight.getText().toString().trim());
+        double targetWeight = Double.parseDouble(etTargetWeight.getText().toString().trim());
+        double waterGoal = Double.parseDouble(etWaterGoal.getText().toString().trim());
+        double sleepGoal = Double.parseDouble(etSleepGoal.getText().toString().trim());
 
         String gender = getSelectedChipText(cgGender);
         String activityLevel = getSelectedChipText(cgActivity);
         String goal = getSelectedChipText(cgGoal);
+        String dietaryPref = getSelectedChipText(cgDiet);
 
-        // --- NUTRITION LOGIC (The "Real App" part) ---
-        // 1. Calculate BMR (Mifflin-St Jeor)
-        double bmr;
-        if (gender.equalsIgnoreCase("Male")) {
-            bmr = (10 * weight) + (6.25 * height) - (5 * age) + 5;
-        } else {
-            bmr = (10 * weight) + (6.25 * height) - (5 * age) - 161;
-        }
+        // Nutrition logic
+        double bmr = (gender.equalsIgnoreCase("Male")) ? 
+                (10 * weight) + (6.25 * height) - (5 * age) + 5 :
+                (10 * weight) + (6.25 * height) - (5 * age) - 161;
 
-        // 2. Adjust for Activity Level
-        double multiplier = 1.2; // Default
+        double multiplier = 1.2;
         if (activityLevel.contains("Moderate")) multiplier = 1.55;
         else if (activityLevel.contains("Active")) multiplier = 1.725;
         else if (activityLevel.contains("Athlete")) multiplier = 1.9;
         
         double tdee = bmr * multiplier;
-
-        // 3. Adjust for Goal
         int targetCals = (int) tdee;
         if (goal.contains("Lose")) targetCals -= 500;
         else if (goal.contains("Gain")) targetCals += 500;
 
-        // 4. Calculate Macros
-        int protein = (int) (weight * 2); // ~2g per kg
-        int fat = (int) ((targetCals * 0.25) / 9); // 25% cals from fat
+        int protein = (int) (weight * 2.0); 
+        int fat = (int) ((targetCals * 0.25) / 9);
         int carbs = (targetCals - (protein * 4) - (fat * 9)) / 4;
 
         Map<String, Object> profile = new HashMap<>();
@@ -128,26 +172,41 @@ public class ProfileSetupActivity extends AppCompatActivity {
         profile.put("age", age);
         profile.put("weight", weight);
         profile.put("height", height);
+        profile.put("targetWeight", targetWeight);
+        profile.put("waterGoal", waterGoal);
+        profile.put("sleepGoal", sleepGoal);
         profile.put("gender", gender);
         profile.put("activityLevel", activityLevel);
         profile.put("goal", goal);
+        profile.put("dietaryPreference", dietaryPref);
         profile.put("targetKcal", targetCals);
-        profile.put("targetProtein", protein);
-        profile.put("targetCarbs", carbs);
-        profile.put("targetFat", fat);
+        profile.put("targetProtein", (double) protein);
+        profile.put("targetCarbs", (double) carbs);
+        profile.put("targetFat", (double) fat);
         profile.put("isProfileComplete", true);
 
         db.collection("users").document(user.getUid())
                 .set(profile, SetOptions.merge())
                 .addOnSuccessListener(aVoid -> {
                     SharedPreferences sharedPref = getSharedPreferences("NutriPrefs", Context.MODE_PRIVATE);
-                    sharedPref.edit().putString("userName", name).putBoolean("isLoggedIn", true).apply();
-                    startActivity(new Intent(ProfileSetupActivity.this, HomeDashboardActivity.class));
+                    sharedPref.edit()
+                            .putString("userName", name)
+                            .putBoolean("isLoggedIn", true)
+                            .putBoolean("isProfileComplete", true)
+                            .apply();
+                    
+                    Toast.makeText(ProfileSetupActivity.this, "Profile Saved Successfully!", Toast.LENGTH_SHORT).show();
+                    
+                    Intent intent = new Intent(ProfileSetupActivity.this, HomeDashboardActivity.class);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                    startActivity(intent);
                     finish();
                 })
                 .addOnFailureListener(e -> {
+                    Log.e("ProfileSetup", "Save failed", e);
                     saveProfileBtn.setEnabled(true);
-                    Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    saveProfileBtn.setText("Finish Setup");
+                    Toast.makeText(ProfileSetupActivity.this, "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
                 });
     }
 
@@ -161,14 +220,21 @@ public class ProfileSetupActivity extends AppCompatActivity {
     }
 
     private boolean validateInputs() {
-        if (etName.getText().toString().trim().isEmpty() || etAge.getText().toString().trim().isEmpty() ||
-            etWeight.getText().toString().trim().isEmpty() || etHeight.getText().toString().trim().isEmpty()) {
+        if (etName.getText().toString().trim().isEmpty() || 
+            etAge.getText().toString().trim().isEmpty() ||
+            etWeight.getText().toString().trim().isEmpty() || 
+            etHeight.getText().toString().trim().isEmpty() ||
+            etTargetWeight.getText().toString().trim().isEmpty() ||
+            etWaterGoal.getText().toString().trim().isEmpty() ||
+            etSleepGoal.getText().toString().trim().isEmpty()) {
             Toast.makeText(this, "Please fill all fields", Toast.LENGTH_SHORT).show();
             return false;
         }
-        if (cgGender.getCheckedChipId() == View.NO_ID || cgActivity.getCheckedChipId() == View.NO_ID || 
-            cgGoal.getCheckedChipId() == View.NO_ID) {
-            Toast.makeText(this, "Please select all options", Toast.LENGTH_SHORT).show();
+        if (cgGender.getCheckedChipId() == View.NO_ID || 
+            cgActivity.getCheckedChipId() == View.NO_ID ||
+            cgGoal.getCheckedChipId() == View.NO_ID ||
+            cgDiet.getCheckedChipId() == View.NO_ID) {
+            Toast.makeText(this, "Please select all preferences", Toast.LENGTH_SHORT).show();
             return false;
         }
         return true;

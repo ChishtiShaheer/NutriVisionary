@@ -14,79 +14,51 @@
     <string name="good_evening">Good Evening 👋</string>
     <string name="user_name">User</string>
     <string name="settings_desc">Settings</string>
-
-    <!-- Dashboard Strings -->
-    <string name="calories_left">0</string>
     <string name="calories_left_placeholder">%1$d</string>
     <string name="kcal_left_label">kcal left</string>
+    <string name="kcal_over_label">kcal over</string>
     <string name="daily_goal_label">Daily Goal</string>
-    <string name="daily_goal_value">2000 kcal</string>
     <string name="daily_goal_value_placeholder">%1$d kcal</string>
-    <string name="eaten_label">Eaten: 0 kcal</string>
     <string name="eaten_label_placeholder">Eaten: %1$d kcal</string>
     <string name="nutrition_breakdown">Nutrition Breakdown</string>
     <string name="protein">Protein</string>
-    <string name="protein_value_placeholder">%1$dg</string>
+    <string name="protein_left_placeholder">%1$dg left</string>
     <string name="carbs">Carbs</string>
-    <string name="carbs_value_placeholder">%1$dg</string>
+    <string name="carbs_left_placeholder">%1$dg left</string>
     <string name="fat">Fat</string>
-    <string name="fat_value_placeholder">%1$dg</string>
-    <string name="todays_tasks">Today\'s Tasks</string>
-    <string name="logged_breakfast">Logged Breakfast</string>
-    <string name="drink_water_task">Drink 2L Water</string>
-    <string name="sleep_label">Sleep</string>
-    <string name="sleep_value_placeholder">%1$.1f hrs</string>
-    <string name="water_label">Water</string>
-    <string name="water_value_placeholder">%1$.1f L</string>
-    <string name="nav_home">Home</string>
-    <string name="nav_scan">Scan</string>
-    <string name="nav_meals">Meals</string>
-    <string name="nav_ai">AI Assistant</string>
-    <string name="nav_progress">Progress</string>
-
-    <!-- Analytics Strings -->
-    <string name="analytics_title">Progress Analytics</string>
-    <string name="weight_trend">Weight Trend</string>
-    <string name="avg_weight">0.0 kg</string>
-    <string name="avg_weight_placeholder">%1$.1f kg</string>
-    <string name="weight_diff">Tracked this week</string>
-    <string name="week">Week</string>
-    <string name="month">Month</string>
-    <string name="year">Year</string>
-    <string name="avg_calories_label">Avg Calories</string>
-    <string name="avg_calories_value">0</string>
-    <string name="streak_label">Streak</string>
-    <string name="streak_value">0 Days</string>
-    <string name="streak_value_placeholder">%1$d Days</string>
-    <string name="goal_progress_label">Goal Progress</string>
-    <string name="goal_progress_value">0%</string>
-    <string name="adherence_heatmap_title">Adherence Heatmap</string>
-    <string name="legend_less">Less</string>
-    <string name="legend_mid">Mid</string>
-    <string name="legend_hit">Hit</string>
-
-    <!-- Meal Architect Strings -->
-    <string name="meal_blueprint">The Blueprint</string>
-    <string name="active_goal_label">Active Goal</string>
-    <string name="select_goal">Select your goal</string>
-    <string name="change_goal">Change</string>
-    <string name="target_kcal_label">Target Calories</string>
-    <string name="kcal_suffix"> kcal</string>
+    <string name="fat_left_placeholder">%1$dg left</string>
+    <string name="macro_over_placeholder">%1$dg over</string>
+    <string name="immunity_shield">Immunity Shield</string>
+    <string name="immunity_desc">Vit C, D &amp; Zinc Levels</string>
+    <string name="todays_meals">Today\'s Meals</string>
     <string name="breakfast">Breakfast</string>
     <string name="lunch">Lunch</string>
     <string name="dinner">Dinner</string>
     <string name="snacks">Snacks</string>
+    <string name="add_meal">Add</string>
     <string name="add_food">+ Add Food</string>
-    <string name="magic_card_title">AI Diet Architect</string>
-    <string name="magic_card_desc">Generate a personalized meal plan in seconds.</string>
-    <string name="generate_plan">Generate AI Plan</string>
-    <string name="chip_vegan">Vegan</string>
-    <string name="chip_keto">Keto</string>
-    <string name="chip_high_protein">High Protein</string>
-    <string name="chip_budget">Budget Friendly</string>
-    <string name="chip_gluten_free">Gluten-Free</string>
-    <string name="remaining_calories">Remaining</string>
-    <string name="meal_planner_title">Meal Planner</string>
+    <string name="add_food_btn">ADD</string>
+    <string name="sleep_label">Sleep</string>
+    <string name="water_label">Water</string>
+    <string name="nav_home">Home</string>
+    <string name="nav_scan">Scan</string>
+    <string name="nav_ai">AI Assistant</string>
+    <string name="nav_progress">Progress</string>
+
+    <!-- Dashboard Status -->
+    <string name="status_protected">PROTECTED</string>
+    <string name="status_vulnerable">VULNERABLE</string>
+    <string name="status_loading">LOADING</string>
+    <string name="not_logged">Not logged</string>
+    <string name="water_progress_format">%1$.1f / %2$.1f L</string>
+    <string name="sleep_progress_format">%1$.1f / %2$.1f hrs</string>
+
+    <!-- Hydration Tracker -->
+    <string name="hydration_title">Hydration Tracker</string>
+    <string name="hydration_subtitle">Quick add water intake</string>
+    <string name="ml250">250ml</string>
+    <string name="ml500">500ml</string>
+    <string name="add_custom_ml">+ Add Custom (100ml)</string>
 
     <!-- Profile Setup Strings -->
     <string name="profile_setup_title">Complete Your Profile</string>
@@ -94,38 +66,95 @@
     <string name="personal_info">Personal Information</string>
     <string name="body_stats">Body Metrics</string>
     <string name="lifestyle_goals">Lifestyle &amp; Goals</string>
+    <string name="gender_label">Gender</string>
     <string name="gender_male">Male</string>
     <string name="gender_female">Female</string>
     <string name="gender_other">Other</string>
     <string name="age_hint">Age</string>
     <string name="weight_hint">Weight (kg)</string>
     <string name="height_hint">Height (cm)</string>
+    <string name="target_weight_hint">Target Weight (kg)</string>
+    <string name="water_goal_hint">Water Goal (L)</string>
+    <string name="sleep_goal_hint">Sleep Goal (Hrs)</string>
+    <string name="activity_level_label">Activity Level</string>
     <string name="activity_sedentary">Sedentary</string>
     <string name="activity_moderate">Moderate</string>
     <string name="activity_active">Active</string>
     <string name="activity_athlete">Athlete</string>
+    <string name="primary_goal_label">Primary Goal</string>
     <string name="goal_lose">Lose Weight</string>
     <string name="goal_maintain">Maintain</string>
     <string name="goal_gain">Gain Muscle</string>
+    <string name="dietary_pref_label">Dietary Preference</string>
+    <string name="diet_everything">Everything</string>
+    <string name="diet_vegetarian">Vegetarian</string>
+    <string name="diet_vegan">Vegan</string>
+    <string name="diet_keto">Keto</string>
+    <string name="health_targets_label">Health Targets</string>
     <string name="upload_photo">Upload Photo</string>
-    <string name="complete_setup">Finish Setup</string>
+    <string name="complete_setup">Save Profile</string>
 
     <!-- Settings Strings -->
     <string name="settings_title">Settings</string>
-    <string name="account_category">Account</string>
     <string name="edit_profile">Edit Profile</string>
+    <string name="dark_mode">Dark Mode</string>
+    <string name="logout">Logout</string>
+    <string name="account_category">Account</string>
     <string name="change_password">Change Password</string>
     <string name="notifications_category">Notifications</string>
     <string name="push_notifications">Push Notifications</string>
     <string name="meal_reminders">Meal Reminders</string>
-    <string name="water_reminders">Water Reminders</string>
     <string name="preferences_category">Preferences</string>
-    <string name="unit_system">Unit System (Metric/Imperial)</string>
-    <string name="dark_mode">Dark Mode</string>
-    <string name="support_category">Support &amp; About</string>
+    <string name="unit_system">Unit System</string>
+    <string name="support_category">Support</string>
     <string name="help_center">Help Center</string>
     <string name="privacy_policy">Privacy Policy</string>
-    <string name="terms_service">Terms of Service</string>
     <string name="app_version">Version 1.0.0</string>
-    <string name="logout">Logout</string>
+
+    <!-- Analytics Strings -->
+    <string name="analytics_title">Progress Analytics</string>
+    <string name="week">Week</string>
+    <string name="month">Month</string>
+    <string name="year">Year</string>
+    <string name="weight_trend">Weight Trend</string>
+    <string name="avg_weight">0.0 kg</string>
+    <string name="weight_diff">Tracked this week</string>
+    <string name="adherence_heatmap_title">Adherence Heatmap</string>
+    <string name="legend_no_log">No log</string>
+    <string name="legend_partial">Partial</string>
+    <string name="legend_hit">Goal Hit</string>
+    <string name="legend_off_track">Off-Track</string>
+    <string name="avg_calories_label">Avg Calories</string>
+    <string name="avg_calories_value">0</string>
+    <string name="streak_label">Streak</string>
+    <string name="streak_value">0 Days</string>
+    <string name="goal_progress_label">Goal Progress</string>
+    <string name="goal_progress_value">0%</string>
+
+    <!-- Compatibility -->
+    <string name="meal_blueprint">Meal Blueprint</string>
+    <string name="active_goal_label">Active Goal</string>
+    <string name="select_goal">Select Goal</string>
+    <string name="change_goal">Change</string>
+    <string name="remaining_calories">Remaining</string>
+    <string name="target_kcal_label">Target kcal</string>
+    <string name="magic_card_title">AI Architect</string>
+    <string name="magic_card_desc">Generate meal plans</string>
+    <string name="chip_vegan">Vegan</string>
+    <string name="chip_keto">Keto</string>
+    <string name="chip_high_protein">High Protein</string>
+    <string name="chip_budget">Budget Friendly</string>
+    <string name="chip_gluten_free">Gluten-Free</string>
+    <string name="generate_plan">Generate</string>
+    <string name="meal_planner_title">Meal Planner</string>
+    <string name="dietary_preference">Dietary Preference</string>
+    <string name="health_targets">Health Targets</string>
+    <string name="current_weight_label">Current Weight</string>
+    <string name="sleep_trend_title">Sleep Trend</string>
+    <string name="avg_sleep_format">Avg Sleep: %1$.1f hrs</string>
+    <string name="sleep_warning_below">%1$d days below goal. Adjust your schedule!</string>
+    <string name="sleep_goal_met">Goal consistently met!</string>
+    <string name="adherence_map_title">Adherence Map (Calorie Goals)</string>
+    <string name="streak_label_stat">Streak</string>
+    <string name="progress_label_stat">Progress</string>
 </resources>

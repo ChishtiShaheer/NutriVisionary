@@ -84,9 +84,12 @@ public class SignupActivity extends AppCompatActivity {
                 .set(userMap)
                 .addOnSuccessListener(aVoid -> {
                     SharedPreferences sharedPref = getSharedPreferences("NutriPrefs", Context.MODE_PRIVATE);
-                    sharedPref.edit().putString("userName", name).putBoolean("isLoggedIn", false).apply();
+                    // INTELLIGENT FIX: Set isLoggedIn to true immediately after successful signup
+                    sharedPref.edit().putString("userName", name).putBoolean("isLoggedIn", true).apply();
                     
-                    startActivity(new Intent(SignupActivity.this, ProfileSetupActivity.class));
+                    Intent intent = new Intent(SignupActivity.this, ProfileSetupActivity.class);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                    startActivity(intent);
                     finish();
                 })
                 .addOnFailureListener(e -> {
