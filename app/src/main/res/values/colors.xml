@@ -48,4 +48,8 @@
     <color name="neonBlue">#00E5FF</color>
     <color name="neonPurple">#D500F9</color>
     <color name="darkBackground">#0F172A</color>
+
+    <!-- NEW: replaces using macroFat (harsh red) for over-calorie days -->
+    <!-- A warm amber-orange — visible but not alarming -->
+    <color name="heatmap_over">#FFB347</color>
 </resources>
