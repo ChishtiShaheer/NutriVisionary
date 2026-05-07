@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "855576953040",
+    "firebase_url": "https://nutrivisionary-b43eb-default-rtdb.firebaseio.com",
+    "project_id": "nutrivisionary-b43eb",
+    "storage_bucket": "nutrivisionary-b43eb.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:855576953040:android:1fe7725df665c84265ded5",
+        "android_client_info": {
+          "package_name": "com.example.nutrivisionary"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBOhpREhA-n1a8_qPTNmu3XP69mbZ4LC0w"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
