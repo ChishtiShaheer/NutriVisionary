@@ -115,7 +115,7 @@
                 android:layout_height="wrap_content"
                 app:cardCornerRadius="24dp"
                 app:cardElevation="3dp"
-                app:cardBackgroundColor="@color/white">
+                app:cardBackgroundColor="@color/cardBackground">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -222,7 +222,7 @@
                 android:layout_height="wrap_content"
                 app:cardCornerRadius="24dp"
                 app:cardElevation="3dp"
-                app:cardBackgroundColor="@color/white">
+                app:cardBackgroundColor="@color/cardBackground">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -303,7 +303,7 @@
                     android:layout_marginEnd="8dp"
                     app:cardCornerRadius="20dp"
                     app:cardElevation="3dp"
-                    app:cardBackgroundColor="@color/white">
+                    app:cardBackgroundColor="@color/cardBackground">
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -338,7 +338,7 @@
                     android:layout_weight="1"
                     app:cardCornerRadius="20dp"
                     app:cardElevation="3dp"
-                    app:cardBackgroundColor="@color/white">
+                    app:cardBackgroundColor="@color/cardBackground">
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -383,7 +383,7 @@
                     android:layout_marginEnd="8dp"
                     app:cardCornerRadius="20dp"
                     app:cardElevation="3dp"
-                    app:cardBackgroundColor="@color/white">
+                    app:cardBackgroundColor="@color/cardBackground">
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -418,7 +418,7 @@
                     android:layout_weight="1"
                     app:cardCornerRadius="20dp"
                     app:cardElevation="3dp"
-                    app:cardBackgroundColor="@color/white">
+                    app:cardBackgroundColor="@color/cardBackground">
 
                     <LinearLayout
                         android:layout_width="match_parent"
