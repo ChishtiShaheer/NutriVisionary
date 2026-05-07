@@ -290,9 +290,9 @@ public class GeminiClient {
             case 403:
                 return "API Key error. Check console!";
             case 404:
-                return "Model or endpoint not found.";
+                return "Limit reached.";
             case 429:
-                return "Rate limited. Slow down!";
+                return "Limit reached.";
             case 500:
             case 503:
                 return "Gemini is busy/down. Try later.";
