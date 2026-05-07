@@ -5,12 +5,12 @@ plugins {
 
 android {
     namespace = "com.example.nutrivisionary"
-    compileSdk = 36
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.example.nutrivisionary"
         minSdk = 24
-        targetSdk = 36
+        targetSdk = 35
         versionCode = 1
         versionName = "1.0"
 
@@ -39,22 +39,36 @@ dependencies {
     implementation(libs.material)
     implementation(libs.activity)
     implementation(libs.constraintlayout)
-    
+
     // Firebase
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.auth)
     implementation(libs.firebase.firestore)
     implementation(libs.firebase.database)
 
-    // CameraX
-    implementation(libs.camera.core)
-    implementation(libs.camera.camera2)
-    implementation(libs.camera.lifecycle)
-    implementation(libs.camera.view)
-    implementation(libs.camera.extensions)
+    // CameraX — exclude the standalone Guava jar to fix ListenableFuture conflict
+    implementation(libs.camera.core) {
+        exclude(group = "com.google.guava", module = "guava")
+    }
+    implementation(libs.camera.camera2) {
+        exclude(group = "com.google.guava", module = "guava")
+    }
+    implementation(libs.camera.lifecycle) {
+        exclude(group = "com.google.guava", module = "guava")
+    }
+    implementation(libs.camera.view) {
+        exclude(group = "com.google.guava", module = "guava")
+    }
+    implementation(libs.camera.extensions) {
+        exclude(group = "com.google.guava", module = "guava")
+    }
+
+    // Guava — single source of truth for ListenableFuture
+    implementation("com.google.guava:guava:33.3.1-android")
 
     // Networking
-    implementation("com.squareup.okhttp3:okhttp:4.12.0")
+    implementation("com.android.volley:volley:1.2.1")
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)

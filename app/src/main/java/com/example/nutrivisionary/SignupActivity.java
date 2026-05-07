@@ -10,11 +10,9 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.HashMap;
@@ -47,76 +45,73 @@ public class SignupActivity extends AppCompatActivity {
             String password = passwordField.getText().toString().trim();
 
             if (name.isEmpty() || email.isEmpty() || password.isEmpty()) {
-                Toast.makeText(this, "Fields cannot be empty", Toast.LENGTH_SHORT).show();
+                Toast.makeText(SignupActivity.this, "Fields cannot be empty", Toast.LENGTH_SHORT).show();
                 return;
             }
-
             if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-                Toast.makeText(this, "Invalid email format", Toast.LENGTH_SHORT).show();
+                Toast.makeText(SignupActivity.this, "Invalid email format", Toast.LENGTH_SHORT).show();
                 return;
             }
-
             if (password.length() < 6) {
-                Toast.makeText(this, "Password must be at least 6 characters", Toast.LENGTH_SHORT).show();
+                Toast.makeText(SignupActivity.this, "Password must be at least 6 characters", Toast.LENGTH_SHORT).show();
                 return;
             }
 
-            // Set state to Saving
             signupBtn.setEnabled(false);
-            signupBtn.setText("Saving...");
-            Toast.makeText(this, "Creating your account...", Toast.LENGTH_SHORT).show();
+            signupBtn.setText("Creating account...");
 
             mAuth.createUserWithEmailAndPassword(email, password)
-                    .addOnCompleteListener(this, task -> {
-                        if (task.isSuccessful()) {
-                            FirebaseUser user = mAuth.getCurrentUser();
-                            if (user != null) {
-                                saveUserToFirestore(user, name);
-                            } else {
-                                signupBtn.setEnabled(true);
-                                signupBtn.setText("Sign Up");
-                                Toast.makeText(SignupActivity.this, "Authentication succeeded but user is null", Toast.LENGTH_SHORT).show();
-                            }
-                        } else {
-                            signupBtn.setEnabled(true);
-                            signupBtn.setText("Sign Up");
-                            String errorMsg = task.getException() != null ? task.getException().getMessage() : "Registration failed";
-                            Toast.makeText(SignupActivity.this, errorMsg, Toast.LENGTH_LONG).show();
-                        }
+                    .addOnSuccessListener(SignupActivity.this, authResult -> {
+                        // FIX: addOnSuccessListener(activity, ...) binds to Activity lifecycle
+                        // so callback is guaranteed on main thread
+                        String uid = authResult.getUser().getUid();
+                        saveUserToFirestore(uid, name, email);
+                    })
+                    .addOnFailureListener(SignupActivity.this, e -> {
+                        Toast.makeText(SignupActivity.this, "Registration failed: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                        signupBtn.setEnabled(true);
+                        signupBtn.setText(getString(R.string.signUpBtn));
                     });
         });
     }
 
-    private void saveUserToFirestore(@NonNull FirebaseUser user, String name) {
+    private void saveUserToFirestore(String uid, String name, String email) {
         Map<String, Object> userMap = new HashMap<>();
         userMap.put("name", name);
-        userMap.put("email", user.getEmail());
-        userMap.put("uid", user.getUid());
+        userMap.put("email", email);
+        userMap.put("uid", uid);
         userMap.put("isProfileComplete", false);
 
-        db.collection("users").document(user.getUid())
+        db.collection("users").document(uid)
                 .set(userMap)
-                .addOnCompleteListener(task -> {
-                    if (task.isSuccessful()) {
-                        Toast.makeText(getApplicationContext(), "Account created successfully!", Toast.LENGTH_SHORT).show();
-                        
-                        SharedPreferences sharedPref = getSharedPreferences("NutriPrefs", Context.MODE_PRIVATE);
-                        sharedPref.edit()
-                                .putString("userName", name)
-                                .putBoolean("isLoggedIn", true)
-                                .apply();
-                        
-                        Intent intent = new Intent(SignupActivity.this, ProfileSetupActivity.class);
-                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                        startActivity(intent);
-                        finish();
-                    } else {
-                        signupBtn.setEnabled(true);
-                        signupBtn.setText("Sign Up");
-                        String errorMsg = task.getException() != null ? task.getException().getMessage() : "Error saving user data";
-                        Log.e(TAG, "Firestore error: " + errorMsg);
-                        Toast.makeText(SignupActivity.this, errorMsg, Toast.LENGTH_LONG).show();
-                    }
+                .addOnSuccessListener(SignupActivity.this, unused -> {
+                    // FIX: use Activity context (SignupActivity.this) for Toast, never getApplicationContext()
+                    Toast.makeText(SignupActivity.this, "Account created successfully!", Toast.LENGTH_SHORT).show();
+
+                    signupBtn.setEnabled(true);
+                    signupBtn.setText(getString(R.string.signUpBtn));
+
+                    nameField.setText("");
+                    emailField.setText("");
+                    passwordField.setText("");
+
+                    SharedPreferences sharedPref = getSharedPreferences("NutriPrefs", Context.MODE_PRIVATE);
+                    sharedPref.edit()
+                            .putString("userName", name)
+                            .putBoolean("isLoggedIn", true)
+                            .apply();
+
+                    // Navigate to profile setup — do NOT call mAuth.signOut() here
+                    Intent intent = new Intent(SignupActivity.this, ProfileSetupActivity.class);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                    startActivity(intent);
+                    finish();
+                })
+                .addOnFailureListener(SignupActivity.this, e -> {
+                    Log.e(TAG, "Firestore error: " + e.getMessage());
+                    Toast.makeText(SignupActivity.this, "Failed to save profile: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                    signupBtn.setEnabled(true);
+                    signupBtn.setText(getString(R.string.signUpBtn));
                 });
     }
 }

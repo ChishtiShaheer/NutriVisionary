@@ -3,8 +3,6 @@ package com.example.nutrivisionary;
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -29,45 +27,26 @@ import com.google.android.material.card.MaterialCardView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 
-import org.json.JSONArray;
-import org.json.JSONObject;
-
-import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
-import okhttp3.Call;
-import okhttp3.Callback;
-import okhttp3.MediaType;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
-
 public class ChatbotActivity extends AppCompatActivity {
 
     private static final String TAG = "ChatbotActivity";
 
-    // ── THE ONLY CORRECT MODEL THAT WORKS WITH THIS API KEY ─────
-    private static final String GEMINI_API_KEY = "AIzaSyCazWtsFIImCOW47w_G-szFPN-TlWeqjlU";
-    private static final String GEMINI_MODEL   = "gemini-2.0-flash";
-    private static final String API_URL =
-            "https://generativelanguage.googleapis.com/v1beta/models/"
-                    + GEMINI_MODEL + ":generateContent?key=" + GEMINI_API_KEY;
-    // ────────────────────────────────────────────────────────────
-
+    // Chip [label, question] pairs
     private static final String[][] CHIPS = {
-            {"🥗 Meal Suggestion",     "Suggest a healthy balanced meal for today based on my goals"},
-            {"💪 High Protein Foods",   "What are the best high protein foods I should eat?"},
-            {"💧 Hydration Tips",       "Give me practical tips to drink enough water every day"},
-            {"😴 Sleep & Recovery",     "How can I improve my sleep quality and recovery?"},
-            {"🔥 Burn Calories",        "What are effective ways to burn more calories daily?"},
-            {"🥦 Best Vegetables",      "Which vegetables should I prioritise for nutrition?"},
-            {"⚡ Pre-workout Meal",     "What should I eat before a workout for best performance?"},
-            {"🍎 Low Calorie Snacks",   "Suggest some tasty low calorie snacks under 200 kcal"}
+            {"🥗 Meal Suggestion",   "Suggest a healthy balanced meal for today based on my goals"},
+            {"💪 High Protein",       "What are the best high protein foods I should eat?"},
+            {"💧 Hydration Tips",     "Give me practical tips to drink enough water every day"},
+            {"😴 Sleep & Recovery",   "How can I improve my sleep quality and recovery?"},
+            {"🔥 Burn Calories",      "What are effective ways to burn more calories daily?"},
+            {"🥦 Best Vegetables",    "Which vegetables should I prioritise for nutrition?"},
+            {"⚡ Pre-workout Meal",   "What should I eat before a workout for best performance?"},
+            {"🍎 Low Cal Snacks",     "Suggest some tasty low calorie snacks under 200 kcal"}
     };
 
     private RecyclerView     rvMessages;
@@ -76,24 +55,21 @@ public class ChatbotActivity extends AppCompatActivity {
     private LinearLayout     chipContainer, emptyState;
 
     private ChatAdapter             adapter;
-    private final List<ChatMessage> messages = new ArrayList<>();
+    final  List<ChatMessage>        messages = new ArrayList<>();
 
-    private final OkHttpClient httpClient = new OkHttpClient.Builder()
-            .connectTimeout(30, java.util.concurrent.TimeUnit.SECONDS)
-            .writeTimeout(30,  java.util.concurrent.TimeUnit.SECONDS)
-            .readTimeout(60,   java.util.concurrent.TimeUnit.SECONDS)
-            .build();
-
-    private final Handler mainHandler = new Handler(Looper.getMainLooper());
     private boolean isLoading = false;
 
-    // User profile
+    // User profile (populated from Firestore)
     private String userName    = "there";
     private int    goalKcal    = 2000;
     private double goalProtein = 100, goalCarbs = 200, goalFat = 70;
     private double goalWater   = 2.0, goalSleep = 8.0;
     private double userWeight  = 0;
     private String userGoal    = "maintain weight";
+
+    // ─────────────────────────────────────────────────────────────
+    // LIFECYCLE
+    // ─────────────────────────────────────────────────────────────
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -104,6 +80,10 @@ public class ChatbotActivity extends AppCompatActivity {
         buildChips();
     }
 
+    // ─────────────────────────────────────────────────────────────
+    // VIEWS
+    // ─────────────────────────────────────────────────────────────
+
     private void initViews() {
         rvMessages    = findViewById(R.id.rvMessages);
         etMessage     = findViewById(R.id.etMessage);
@@ -112,63 +92,70 @@ public class ChatbotActivity extends AppCompatActivity {
         chipContainer = findViewById(R.id.chipContainer);
         emptyState    = findViewById(R.id.emptyState);
 
+        // stackFromEnd = newest messages appear at bottom
         LinearLayoutManager llm = new LinearLayoutManager(this);
         llm.setStackFromEnd(true);
         rvMessages.setLayoutManager(llm);
         adapter = new ChatAdapter(messages);
         rvMessages.setAdapter(adapter);
 
-        View btnBack  = findViewById(R.id.btnBack);
-        View btnClear = findViewById(R.id.btnClear);
-        if (btnBack  != null) btnBack.setOnClickListener(v -> finish());
-        if (btnClear != null) btnClear.setOnClickListener(v -> confirmClearChat());
+        View back  = findViewById(R.id.btnBack);
+        View clear = findViewById(R.id.btnClear);
+        if (back  != null) back.setOnClickListener(v  -> finish());
+        if (clear != null) clear.setOnClickListener(v -> confirmClearChat());
 
         btnSend.setOnClickListener(v -> sendMessage());
         etMessage.setOnEditorActionListener((v, actionId, event) -> {
-            if (actionId == EditorInfo.IME_ACTION_SEND ||
-                    (event != null && event.getKeyCode() == KeyEvent.KEYCODE_ENTER
-                            && event.getAction() == KeyEvent.ACTION_DOWN)) {
+            if (actionId == EditorInfo.IME_ACTION_SEND
+                    || (event != null
+                    && event.getKeyCode() == KeyEvent.KEYCODE_ENTER
+                    && event.getAction() == KeyEvent.ACTION_DOWN)) {
                 sendMessage();
                 return true;
             }
             return false;
         });
 
-        setSuggestionCard(R.id.suggestionA, "Suggest a healthy meal for today based on my goals");
-        setSuggestionCard(R.id.suggestionB, "How much water should I drink daily?");
-        setSuggestionCard(R.id.suggestionC, "What are the best high protein foods?");
-        setSuggestionCard(R.id.suggestionD, "Give me tips for better sleep and recovery");
+        // Empty-state suggestion cards
+        setCard(R.id.suggestionA, "Suggest a healthy meal for today based on my goals");
+        setCard(R.id.suggestionB, "How much water should I drink daily?");
+        setCard(R.id.suggestionC, "What are the best high protein foods?");
+        setCard(R.id.suggestionD, "Give me tips for better sleep and recovery");
     }
 
-    private void setSuggestionCard(int id, String question) {
+    private void setCard(int id, String question) {
         View v = findViewById(id);
         if (v != null) v.setOnClickListener(x -> submitText(question));
     }
 
+    // ─────────────────────────────────────────────────────────────
+    // USER CONTEXT
+    // ─────────────────────────────────────────────────────────────
+
     private void loadUserContext() {
         String uid = FirebaseAuth.getInstance().getUid();
         if (uid == null) return;
-        FirebaseFirestore.getInstance().collection("users").document(uid).get()
+        FirebaseFirestore.getInstance()
+                .collection("users").document(uid).get()
                 .addOnSuccessListener(doc -> {
                     if (!doc.exists()) return;
                     String n = doc.getString("name");
                     if (n != null && !n.isEmpty()) userName = n;
-                    safeNum(doc, "targetKcal",   v -> goalKcal    = v.intValue());
-                    safeNum(doc, "targetProtein", v -> goalProtein = v.doubleValue());
-                    safeNum(doc, "targetCarbs",   v -> goalCarbs   = v.doubleValue());
-                    safeNum(doc, "targetFat",     v -> goalFat     = v.doubleValue());
-                    safeNum(doc, "waterGoal",     v -> goalWater   = v.doubleValue());
-                    safeNum(doc, "sleepGoal",     v -> goalSleep   = v.doubleValue());
-                    safeNum(doc, "weight",        v -> userWeight  = v.doubleValue());
+                    getNum(doc, "targetKcal",   v -> goalKcal    = v.intValue());
+                    getNum(doc, "targetProtein", v -> goalProtein = v.doubleValue());
+                    getNum(doc, "targetCarbs",   v -> goalCarbs   = v.doubleValue());
+                    getNum(doc, "targetFat",     v -> goalFat     = v.doubleValue());
+                    getNum(doc, "waterGoal",     v -> goalWater   = v.doubleValue());
+                    getNum(doc, "sleepGoal",     v -> goalSleep   = v.doubleValue());
+                    getNum(doc, "weight",        v -> userWeight  = v.doubleValue());
                     String g = doc.getString("goal");
                     if (g != null) userGoal = g;
                 });
     }
 
-    private interface NumConsumer { void accept(Number n); }
-    private void safeNum(com.google.firebase.firestore.DocumentSnapshot doc,
-                         String field, NumConsumer c) {
-        Number n = (Number) doc.get(field);
+    private interface NC { void accept(Number n); }
+    private void getNum(com.google.firebase.firestore.DocumentSnapshot doc, String f, NC c) {
+        Number n = (Number) doc.get(f);
         if (n != null) c.accept(n);
     }
 
@@ -178,19 +165,22 @@ public class ChatbotActivity extends AppCompatActivity {
                 + "User profile:\n"
                 + "• Name: " + userName + "\n"
                 + "• Calorie goal: " + goalKcal + " kcal/day\n"
-                + "• Protein: " + (int)goalProtein + "g | Carbs: " + (int)goalCarbs
-                + "g | Fat: " + (int)goalFat + "g\n"
-                + "• Water goal: " + goalWater + "L/day\n"
-                + "• Sleep goal: " + goalSleep + " hrs/night\n"
+                + "• Protein: " + (int)goalProtein + "g  Carbs: " + (int)goalCarbs
+                + "g  Fat: " + (int)goalFat + "g\n"
+                + "• Water: " + goalWater + "L/day  Sleep: " + goalSleep + " hrs/night\n"
                 + (userWeight > 0 ? "• Weight: " + userWeight + " kg\n" : "")
-                + "• Fitness goal: " + userGoal + "\n\n"
-                + "Instructions:\n"
-                + "- Always address the user as " + userName + ".\n"
-                + "- Be concise: 2-3 short paragraphs max.\n"
-                + "- Use plain text only. No markdown (no **, no ##, no ---).\n"
-                + "- Format any lists with the bullet character •\n"
-                + "- For medical concerns always recommend consulting a doctor.";
+                + "• Goal: " + userGoal + "\n\n"
+                + "Rules:\n"
+                + "- Address the user as " + userName + ".\n"
+                + "- 2-3 short paragraphs max. Be warm and actionable.\n"
+                + "- Plain text only — no markdown (no ** ## --- *).\n"
+                + "- Use • for any bullet lists.\n"
+                + "- For medical questions recommend a healthcare provider.";
     }
+
+    // ─────────────────────────────────────────────────────────────
+    // CHIPS
+    // ─────────────────────────────────────────────────────────────
 
     private void buildChips() {
         if (chipContainer == null) return;
@@ -226,6 +216,10 @@ public class ChatbotActivity extends AppCompatActivity {
         return card;
     }
 
+    // ─────────────────────────────────────────────────────────────
+    // SEND
+    // ─────────────────────────────────────────────────────────────
+
     private void sendMessage() {
         String text = etMessage.getText().toString().trim();
         if (TextUtils.isEmpty(text)) return;
@@ -240,152 +234,47 @@ public class ChatbotActivity extends AppCompatActivity {
 
         addMessage(new ChatMessage(text, ChatMessage.TYPE_USER));
         scrollToBottom();
-        
-        // ── HARDCODED FOR EVALUATION ──
         isLoading = true;
         showTyping(true);
-        
-        new Handler(Looper.getMainLooper()).postDelayed(() -> {
-            showTyping(false);
-            isLoading = false;
-            String response;
-            if (text.toLowerCase().contains("maintenance cals")) {
-                response = "Based on your profile, " + userName + ", your estimated maintenance calories are approximately " + goalKcal + " kcal per day.\n\n"
-                        + "To maintain your current weight of " + userWeight + " kg with your goal of " + userGoal + ", you should aim for:\n"
-                        + "• Protein: " + (int)goalProtein + "g\n"
-                        + "• Carbs: " + (int)goalCarbs + "g\n"
-                        + "• Fat: " + (int)goalFat + "g\n\n"
-                        + "Would you like some meal suggestions to hit these targets?";
-            } else {
-                response = "Hello " + userName + "! I'm NutriAI. You asked: \"" + text + "\". How can I assist you with your " + userGoal + " goal today?";
-            }
-            addMessage(new ChatMessage(response, ChatMessage.TYPE_BOT));
-            scrollToBottom();
-        }, 1500);
 
-        // Original API call commented out for evaluation
-        // callGeminiAPI(text);
-    }
-
-    private void callGeminiAPI(String latestUserText) {
-        // Functionality temporarily replaced by hardcoded responses in submitText
-        /*
-        try {
-            JSONArray contents = new JSONArray();
-            String pendingRole = null;
-            StringBuilder pendingText = new StringBuilder();
-
-            int historyEnd = messages.size() - 1; 
-            for (int i = 0; i < historyEnd; i++) {
-                ChatMessage msg = messages.get(i);
-                String role = msg.type == ChatMessage.TYPE_USER ? "user" : "model";
-                if (pendingRole == null) {
-                    pendingRole = role;
-                    pendingText.append(msg.text);
-                } else if (role.equals(pendingRole)) {
-                    pendingText.append("\n").append(msg.text);
-                } else {
-                    contents.put(makeContent(pendingRole, pendingText.toString()));
-                    pendingRole = role;
-                    pendingText = new StringBuilder(msg.text);
-                }
-            }
-            if (pendingRole != null) {
-                contents.put(makeContent(pendingRole, pendingText.toString()));
-            }
-
-            contents.put(makeContent("user", latestUserText));
-
-            JSONObject systemInstruction = new JSONObject();
-            systemInstruction.put("parts",
-                    new JSONArray().put(new JSONObject().put("text", buildSystemPrompt())));
-
-            JSONObject genConfig = new JSONObject();
-            genConfig.put("temperature",     0.7);
-            genConfig.put("maxOutputTokens", 800);
-
-            JSONObject requestBody = new JSONObject();
-            requestBody.put("system_instruction", systemInstruction);
-            requestBody.put("contents",           contents);
-            requestBody.put("generationConfig",   genConfig);
-
-            RequestBody body = RequestBody.create(
-                    requestBody.toString(),
-                    MediaType.parse("application/json; charset=utf-8"));
-
-            Request request = new Request.Builder()
-                    .url(API_URL)
-                    .post(body)
-                    .addHeader("Content-Type", "application/json")
-                    .build();
-
-            httpClient.newCall(request).enqueue(new Callback() {
-                @Override
-                public void onFailure(@NonNull Call call, @NonNull IOException e) {
-                    mainHandler.post(() -> {
+        // Delegate to GeminiClient (Volley-based)
+        GeminiClient.getInstance(this).sendChatRequest(
+                buildSystemPrompt(),
+                messages,                      // full history including new message
+                new GeminiClient.GeminiCallback() {
+                    @Override
+                    public void onSuccess(String reply) {
                         isLoading = false;
                         showTyping(false);
-                        addMessage(new ChatMessage("Connection failed.", ChatMessage.TYPE_BOT));
+                        addMessage(new ChatMessage(reply, ChatMessage.TYPE_BOT));
                         scrollToBottom();
-                    });
-                }
+                    }
 
-                @Override
-                public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
-                    String resStr = response.body() != null ? response.body().string() : "";
-                    mainHandler.post(() -> {
+                    @Override
+                    public void onError(int code, String message) {
                         isLoading = false;
                         showTyping(false);
-                        try {
-                            String reply = extractReply(resStr);
-                            addMessage(new ChatMessage(reply, ChatMessage.TYPE_BOT));
-                            scrollToBottom();
-                        } catch (Exception ex) {
-                            addMessage(new ChatMessage("Error reading response.", ChatMessage.TYPE_BOT));
-                            scrollToBottom();
-                        }
-                    });
-                }
-            });
-        } catch (Exception e) {
-            isLoading = false;
-            showTyping(false);
-        }
-        */
+                        Log.e(TAG, "Gemini error " + code + ": " + message);
+                        addMessage(new ChatMessage(message, ChatMessage.TYPE_BOT));
+                        scrollToBottom();
+                    }
+                });
     }
 
-    private String extractReply(String rawJson) throws Exception {
-        JSONObject json       = new JSONObject(rawJson);
-        JSONArray candidates = json.optJSONArray("candidates");
-        if (candidates == null || candidates.length() == 0) throw new Exception("No candidates");
-        JSONObject candidate  = candidates.getJSONObject(0);
-        JSONArray parts = candidate.getJSONObject("content").getJSONArray("parts");
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < parts.length(); i++) {
-            JSONObject part = parts.getJSONObject(i);
-            if (part.optBoolean("thought", false)) continue;
-            String t = part.optString("text","").trim();
-            if (!t.isEmpty()) {
-                if (sb.length() > 0) sb.append("\n");
-                sb.append(t);
-            }
-        }
-        return sb.toString().trim();
-    }
-
-    private JSONObject makeContent(String role, String text) throws Exception {
-        return new JSONObject()
-                .put("role", role)
-                .put("parts", new JSONArray().put(new JSONObject().put("text", text)));
-    }
+    // ─────────────────────────────────────────────────────────────
+    // TYPING INDICATOR
+    // ─────────────────────────────────────────────────────────────
 
     private AnimatorSet typingAnimator;
 
     private void showTyping(boolean show) {
         if (typingCard == null) return;
         typingCard.setVisibility(show ? View.VISIBLE : View.GONE);
-        if (show) startTypingAnimation();
-        else if (typingAnimator != null) typingAnimator.cancel();
+        if (show) {
+            startTypingAnimation();
+        } else if (typingAnimator != null) {
+            typingAnimator.cancel();
+        }
     }
 
     private void startTypingAnimation() {
@@ -394,7 +283,7 @@ public class ChatbotActivity extends AppCompatActivity {
         View d3 = typingCard.findViewById(R.id.tvTypingDot3);
         if (d1 == null || d2 == null || d3 == null) return;
         typingAnimator = new AnimatorSet();
-        typingAnimator.playTogether(bounceDot(d1,0), bounceDot(d2,150), bounceDot(d3,300));
+        typingAnimator.playTogether(bounceDot(d1, 0), bounceDot(d2, 150), bounceDot(d3, 300));
         typingAnimator.start();
     }
 
@@ -407,6 +296,10 @@ public class ChatbotActivity extends AppCompatActivity {
         return a;
     }
 
+    // ─────────────────────────────────────────────────────────────
+    // HELPERS
+    // ─────────────────────────────────────────────────────────────
+
     private void addMessage(ChatMessage msg) {
         messages.add(msg);
         adapter.notifyItemInserted(messages.size() - 1);
@@ -414,8 +307,8 @@ public class ChatbotActivity extends AppCompatActivity {
 
     private void scrollToBottom() {
         if (!messages.isEmpty())
-            rvMessages.postDelayed(() ->
-                    rvMessages.smoothScrollToPosition(messages.size() - 1), 80);
+            rvMessages.postDelayed(
+                    () -> rvMessages.smoothScrollToPosition(messages.size() - 1), 80);
     }
 
     private void confirmClearChat() {
@@ -441,44 +334,52 @@ public class ChatbotActivity extends AppCompatActivity {
         return Math.round(dp * getResources().getDisplayMetrics().density);
     }
 
-    static class ChatMessage {
-        static final int TYPE_USER = 0, TYPE_BOT = 1;
-        final String text, time;
-        final int    type;
-        ChatMessage(String text, int type) {
-            this.text = text; this.type = type;
+    // ─────────────────────────────────────────────────────────────
+    // DATA MODEL
+    // ─────────────────────────────────────────────────────────────
+
+    public static class ChatMessage {
+        public static final int TYPE_USER = 0, TYPE_BOT = 1;
+        public final String text, time;
+        public final int    type;
+        public ChatMessage(String text, int type) {
+            this.text = text;
+            this.type = type;
             this.time = new SimpleDateFormat("h:mm a", Locale.getDefault()).format(new Date());
         }
     }
 
-    private static class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+    // ─────────────────────────────────────────────────────────────
+    // ADAPTER
+    // ─────────────────────────────────────────────────────────────
+
+    private static class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.VH> {
         private final List<ChatMessage> items;
         ChatAdapter(List<ChatMessage> items) { this.items = items; }
 
         @Override public int getItemViewType(int pos) { return items.get(pos).type; }
 
         @NonNull @Override
-        public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup p, int vt) {
-            LayoutInflater inf = LayoutInflater.from(p.getContext());
-            int layout = vt == ChatMessage.TYPE_USER
+        public VH onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+            int layout = viewType == ChatMessage.TYPE_USER
                     ? R.layout.item_message_user
                     : R.layout.item_message_bot;
-            return new VH(inf.inflate(layout, p, false));
+            View v = LayoutInflater.from(parent.getContext()).inflate(layout, parent, false);
+            return new VH(v);
         }
 
         @Override
-        public void onBindViewHolder(@NonNull RecyclerView.ViewHolder h, int pos) {
-            ChatMessage m  = items.get(pos);
-            VH vh = (VH) h;
-            if (vh.tvMsg  != null) vh.tvMsg.setText(m.text);
-            if (vh.tvTime != null) vh.tvTime.setText(m.time);
+        public void onBindViewHolder(@NonNull VH h, int pos) {
+            ChatMessage m = items.get(pos);
+            if (h.tvMsg  != null) h.tvMsg.setText(m.text);
+            if (h.tvTime != null) h.tvTime.setText(m.time);
 
-            // Slide-in animation from bottom
-            h.itemView.setTranslationY(100f);
+            // Slide-up entrance animation
+            h.itemView.setTranslationY(60f);
             h.itemView.setAlpha(0f);
             h.itemView.animate()
                     .translationY(0f).alpha(1f)
-                    .setDuration(300)
+                    .setDuration(250)
                     .setInterpolator(new AccelerateDecelerateInterpolator())
                     .start();
         }

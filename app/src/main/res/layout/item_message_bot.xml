@@ -42,7 +42,7 @@
             android:layout_height="wrap_content"
             app:cardCornerRadius="20dp"
             app:cardElevation="2dp"
-            app:cardBackgroundColor="@color/white"
+            app:cardBackgroundColor="@color/cardBackground"
             app:strokeWidth="0dp">
 
             <TextView
