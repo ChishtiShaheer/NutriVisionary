@@ -45,7 +45,6 @@
     <string name="nav_ai">AI Assistant</string>
     <string name="nav_progress">Progress</string>
 
-    <!-- Dashboard Status -->
     <string name="status_protected">PROTECTED</string>
     <string name="status_vulnerable">VULNERABLE</string>
     <string name="status_loading">LOADING</string>
@@ -53,14 +52,12 @@
     <string name="water_progress_format">%1$.1f / %2$.1f L</string>
     <string name="sleep_progress_format">%1$.1f / %2$.1f hrs</string>
 
-    <!-- Hydration Tracker -->
     <string name="hydration_title">Hydration Tracker</string>
     <string name="hydration_subtitle">Quick add water intake</string>
     <string name="ml250">250ml</string>
     <string name="ml500">500ml</string>
     <string name="add_custom_ml">+ Add Custom (100ml)</string>
 
-    <!-- Profile Setup Strings -->
     <string name="profile_setup_title">Complete Your Profile</string>
     <string name="profile_setup_subtitle">Help us tailor your nutrition journey.</string>
     <string name="personal_info">Personal Information</string>
@@ -94,13 +91,11 @@
     <string name="upload_photo">Upload Photo</string>
     <string name="complete_setup">Save Profile</string>
 
-    <!-- Settings Strings -->
     <string name="settings_title">Settings</string>
     <string name="edit_profile">Edit Profile</string>
     <string name="dark_mode">Dark Mode</string>
     <string name="logout">Logout</string>
     <string name="account_category">Account</string>
-    <string name="change_password">Change Password</string>
     <string name="notifications_category">Notifications</string>
     <string name="push_notifications">Push Notifications</string>
     <string name="meal_reminders">Meal Reminders</string>
@@ -111,7 +106,6 @@
     <string name="privacy_policy">Privacy Policy</string>
     <string name="app_version">Version 1.0.0</string>
 
-    <!-- Analytics Strings -->
     <string name="analytics_title">Progress Analytics</string>
     <string name="week">Week</string>
     <string name="month">Month</string>
@@ -131,7 +125,6 @@
     <string name="goal_progress_label">Goal Progress</string>
     <string name="goal_progress_value">0%</string>
 
-    <!-- Compatibility -->
     <string name="meal_blueprint">Meal Blueprint</string>
     <string name="active_goal_label">Active Goal</string>
     <string name="select_goal">Select Goal</string>
@@ -157,4 +150,45 @@
     <string name="adherence_map_title">Adherence Map (Calorie Goals)</string>
     <string name="streak_label_stat">Streak</string>
     <string name="progress_label_stat">Progress</string>
+
+    <string name="fill_fields">Please fill all fields</string>
+    <string name="invalid_email">Invalid email format</string>
+    <string name="password_length">Password must be at least 6 characters</string>
+    <string name="logging_in">Logging in...</string>
+    <string name="creating_account">Creating account...</string>
+    <string name="auth_failed">Authentication failed: </string>
+    <string name="reg_failed">Registration failed: </string>
+    <string name="acc_created">Account created successfully!</string>
+    <string name="error_saving">Error saving user data</string>
+    <string name="welcome_back">Welcome back, %1$s!</string>
+    <string name="no_items_logged">No items logged for %1$s yet.</string>
+    <string name="close">Close</string>
+    <string name="add_more">Add More</string>
+    <string name="log_water">Log Water</string>
+    <string name="log">Log</string>
+    <string name="cancel">Cancel</string>
+    <string name="log_sleep_duration">Log Sleep Duration</string>
+    <string name="g_left">g left</string>
+    <string name="clear_chat">Clear Chat</string>
+    <string name="delete_chat_history">Delete all chat history?</string>
+    <string name="clear">Clear</string>
+    <string name="camera_not_ready">Camera not ready</string>
+    <string name="capture_failed">Capture failed: </string>
+    <string name="no_image_captured">No image captured</string>
+    <string name="log_to_meal">Log to %1$s</string>
+    <string name="logged_to_meal">%1$s logged to %2$s ✓</string>
+    <string name="failed_to_log">Failed to log: </string>
+    <string name="camera_perm_required">Camera permission required</string>
+    <string name="unit_kcal">%1$d kcal</string>
+    <string name="unit_gram">%1$.1fg</string>
+    <string name="no_details">No details available.</string>
+    <string name="parse_error">Could not read food data. Try a clearer photo.</string>
+
+    <string name="session_expired">Session expired. Please login again.</string>
+    <string name="saving">Saving...</string>
+    <string name="goal_lose_short">Lose</string>
+    <string name="goal_gain_short">Gain</string>
+    <string name="profile_saved">Profile updated successfully!</string>
+    <string name="invalid_numbers">Please enter valid numeric values</string>
+    <string name="select_preferences">Please select all preferences</string>
 </resources>

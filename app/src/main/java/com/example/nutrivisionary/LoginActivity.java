@@ -65,22 +65,22 @@ public class LoginActivity extends AppCompatActivity {
         String name = etName.getText().toString().trim();
 
         if (email.isEmpty() || password.isEmpty() || (!isLoginMode && name.isEmpty())) {
-            Toast.makeText(this, "Please fill all fields", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, getString(R.string.fill_fields), Toast.LENGTH_SHORT).show();
             return;
         }
 
         if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-            Toast.makeText(this, "Invalid email format", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, getString(R.string.invalid_email), Toast.LENGTH_SHORT).show();
             return;
         }
 
         if (password.length() < 6) {
-            Toast.makeText(this, "Password must be at least 6 characters", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, getString(R.string.password_length), Toast.LENGTH_SHORT).show();
             return;
         }
 
         btnSubmit.setEnabled(false);
-        btnSubmit.setText(isLoginMode ? "Logging in..." : "Creating account...");
+        btnSubmit.setText(isLoginMode ? getString(R.string.logging_in) : getString(R.string.creating_account));
 
         if (isLoginMode) {
             loginUser(email, password);
@@ -96,8 +96,8 @@ public class LoginActivity extends AppCompatActivity {
                         fetchUserDataAndProceed(mAuth.getCurrentUser());
                     } else {
                         btnSubmit.setEnabled(true);
-                        btnSubmit.setText("Login");
-                        Toast.makeText(this, "Authentication failed: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
+                        btnSubmit.setText(getString(R.string.login2));
+                        Toast.makeText(this, getString(R.string.auth_failed) + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
                     }
                 });
     }
@@ -109,8 +109,8 @@ public class LoginActivity extends AppCompatActivity {
                         saveUserToFirestore(mAuth.getCurrentUser(), name);
                     } else {
                         btnSubmit.setEnabled(true);
-                        btnSubmit.setText("Create Account");
-                        Toast.makeText(this, "Registration failed: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
+                        btnSubmit.setText(getString(R.string.create_account));
+                        Toast.makeText(this, getString(R.string.reg_failed) + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
                     }
                 });
     }
@@ -125,15 +125,15 @@ public class LoginActivity extends AppCompatActivity {
         db.collection("users").document(user.getUid())
                 .set(userMap)
                 .addOnSuccessListener(aVoid -> {
-                    Toast.makeText(this, "Account created successfully!", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, getString(R.string.acc_created), Toast.LENGTH_SHORT).show();
                     saveToPrefs(name, user.getEmail(), false);
                     startActivity(new Intent(this, ProfileSetupActivity.class));
                     finish();
                 })
                 .addOnFailureListener(e -> {
                     btnSubmit.setEnabled(true);
-                    btnSubmit.setText("Create Account");
-                    Toast.makeText(this, "Error saving user data", Toast.LENGTH_SHORT).show();
+                    btnSubmit.setText(getString(R.string.create_account));
+                    Toast.makeText(this, getString(R.string.error_saving), Toast.LENGTH_SHORT).show();
                 });
     }
 
@@ -145,7 +145,7 @@ public class LoginActivity extends AppCompatActivity {
                         Boolean isProfileComplete = documentSnapshot.getBoolean("isProfileComplete");
                         saveToPrefs(name, user.getEmail(), true);
                         
-                        Toast.makeText(this, "Welcome back, " + (name != null ? name : "user") + "!", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(this, getString(R.string.welcome_back, (name != null ? name : getString(R.string.user_name))), Toast.LENGTH_SHORT).show();
 
                         if (isProfileComplete != null && isProfileComplete) {
                             goToDashboard();
@@ -159,7 +159,7 @@ public class LoginActivity extends AppCompatActivity {
                 })
                 .addOnFailureListener(e -> {
                     btnSubmit.setEnabled(true);
-                    btnSubmit.setText("Login");
+                    btnSubmit.setText(getString(R.string.login2));
                     goToDashboard();
                 });
     }
@@ -188,14 +188,14 @@ public class LoginActivity extends AppCompatActivity {
             tabSignup.setBackgroundTintList(ContextCompat.getColorStateList(this, android.R.color.transparent));
             tabSignup.setTextColor(ContextCompat.getColor(this, R.color.slateGray));
             tilName.setVisibility(View.GONE);
-            btnSubmit.setText("Login");
+            btnSubmit.setText(getString(R.string.login2));
         } else {
             tabSignup.setBackgroundTintList(ContextCompat.getColorStateList(this, R.color.royalBlue));
             tabSignup.setTextColor(ContextCompat.getColor(this, R.color.white));
             tabLogin.setBackgroundTintList(ContextCompat.getColorStateList(this, android.R.color.transparent));
             tabLogin.setTextColor(ContextCompat.getColor(this, R.color.slateGray));
             tilName.setVisibility(View.VISIBLE);
-            btnSubmit.setText("Create Account");
+            btnSubmit.setText(getString(R.string.create_account));
         }
     }
 }

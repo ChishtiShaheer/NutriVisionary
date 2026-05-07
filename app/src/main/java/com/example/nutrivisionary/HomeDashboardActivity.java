@@ -1,13 +1,9 @@
 package com.example.nutrivisionary;
 
-import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.InputType;
-import android.view.View;
 import android.widget.EditText;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -110,7 +106,6 @@ public class HomeDashboardActivity extends AppCompatActivity {
         layoutDinner     = findViewById(R.id.layoutDinner);
         layoutSnacks     = findViewById(R.id.layoutSnacks);
 
-        // ── Navigation ────────────────────────────────────────────────────────
         findViewById(R.id.navScan).setOnClickListener(v ->
                 startActivity(new Intent(this, ScanFoodActivity.class)));
         findViewById(R.id.navAI).setOnClickListener(v ->
@@ -122,24 +117,20 @@ public class HomeDashboardActivity extends AppCompatActivity {
         findViewById(R.id.profileIcon).setOnClickListener(v ->
                 startActivity(new Intent(this, ProfileSetupActivity.class)));
 
-        // ── Add-meal buttons ──────────────────────────────────────────────────
-        findViewById(R.id.btnAddBreakfast).setOnClickListener(v -> openManualLog("Breakfast"));
-        findViewById(R.id.btnAddLunch).setOnClickListener(v -> openManualLog("Lunch"));
-        findViewById(R.id.btnAddDinner).setOnClickListener(v -> openManualLog("Dinner"));
-        findViewById(R.id.btnAddSnacks).setOnClickListener(v -> openManualLog("Snacks"));
+        findViewById(R.id.btnAddBreakfast).setOnClickListener(v -> openManualLog(getString(R.string.breakfast)));
+        findViewById(R.id.btnAddLunch).setOnClickListener(v -> openManualLog(getString(R.string.lunch)));
+        findViewById(R.id.btnAddDinner).setOnClickListener(v -> openManualLog(getString(R.string.dinner)));
+        findViewById(R.id.btnAddSnacks).setOnClickListener(v -> openManualLog(getString(R.string.snacks)));
 
-        // ── Meal-row clicks ───────────────────────────────────────────────────
-        layoutBreakfast.setOnClickListener(v -> showMealDetails("Breakfast", breakfastList));
-        layoutLunch.setOnClickListener(v     -> showMealDetails("Lunch", lunchList));
-        layoutDinner.setOnClickListener(v    -> showMealDetails("Dinner", dinnerList));
-        layoutSnacks.setOnClickListener(v    -> showMealDetails("Snacks", snacksList));
+        layoutBreakfast.setOnClickListener(v -> showMealDetails(getString(R.string.breakfast), breakfastList));
+        layoutLunch.setOnClickListener(v     -> showMealDetails(getString(R.string.lunch), lunchList));
+        layoutDinner.setOnClickListener(v    -> showMealDetails(getString(R.string.dinner), dinnerList));
+        layoutSnacks.setOnClickListener(v    -> showMealDetails(getString(R.string.snacks), snacksList));
 
-        // ── Water buttons ─────────────────────────────────────────────────────
         findViewById(R.id.btnQuickWater250).setOnClickListener(v -> logWaterIncrement(0.25));
         findViewById(R.id.btnQuickWater500).setOnClickListener(v -> logWaterIncrement(0.50));
         findViewById(R.id.btnCustomWater).setOnClickListener(v -> showCustomWaterDialog());
 
-        // ── Sleep button ──────────────────────────────────────────────────────
         findViewById(R.id.btnLogSleep).setOnClickListener(v -> showSleepTimePicker());
         findViewById(R.id.cardSleep).setOnClickListener(v -> showSleepTimePicker());
     }
@@ -152,16 +143,16 @@ public class HomeDashboardActivity extends AppCompatActivity {
 
     private void showMealDetails(String title, List<String> foods) {
         if (foods == null || foods.isEmpty()) {
-            Toast.makeText(this, "No items logged for " + title + " yet.", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, getString(R.string.no_items_logged, title), Toast.LENGTH_SHORT).show();
             return;
         }
         StringBuilder sb = new StringBuilder();
         for (String f : foods) sb.append("• ").append(f).append("\n");
         new AlertDialog.Builder(this)
-                .setTitle(title + " — items")
+                .setTitle(title)
                 .setMessage(sb.toString().trim())
-                .setPositiveButton("Close", null)
-                .setNeutralButton("Add More", (d, w) -> openManualLog(title))
+                .setPositiveButton(getString(R.string.close), null)
+                .setNeutralButton(getString(R.string.add_more), (d, w) -> openManualLog(title))
                 .show();
     }
 
@@ -173,15 +164,15 @@ public class HomeDashboardActivity extends AppCompatActivity {
         EditText input = new EditText(this);
         input.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_DECIMAL);
         new AlertDialog.Builder(this)
-                .setTitle("Log Water")
+                .setTitle(getString(R.string.log_water))
                 .setView(input)
-                .setPositiveButton("Log", (d, w) -> {
+                .setPositiveButton(getString(R.string.log), (d, w) -> {
                     try {
                         double ml = Double.parseDouble(input.getText().toString());
                         updateHealthLog("consumedWater", ml / 1000.0, true);
                     } catch (Exception ignored) {}
                 })
-                .setNegativeButton("Cancel", null)
+                .setNegativeButton(getString(R.string.cancel), null)
                 .show();
     }
 
@@ -189,7 +180,7 @@ public class HomeDashboardActivity extends AppCompatActivity {
         MaterialTimePicker picker = new MaterialTimePicker.Builder()
                 .setTimeFormat(TimeFormat.CLOCK_24H)
                 .setHour(8)
-                .setTitleText("Log Sleep Duration")
+                .setTitleText(getString(R.string.log_sleep_duration))
                 .build();
         picker.addOnPositiveButtonClickListener(v -> {
             double hours = picker.getHour() + (picker.getMinute() / 60.0);
@@ -223,7 +214,7 @@ public class HomeDashboardActivity extends AppCompatActivity {
                     goalFat     = getDouble(snapshot, "targetFat", 70.0);
                     goalWater   = getDouble(snapshot, "waterGoal", 2.0);
                     goalSleep   = getDouble(snapshot, "sleepGoal", 8.0);
-                    tvDailyGoal.setText(goalKcal + " kcal");
+                    tvDailyGoal.setText(getString(R.string.daily_goal_value_placeholder, goalKcal));
                 });
 
         logListener = db.collection("users").document(current.getUid())
@@ -255,26 +246,26 @@ public class HomeDashboardActivity extends AppCompatActivity {
     private void updateProgressUI(int consumed, double p, double carbs, double f, double water, double sleep) {
         int cLeft = goalKcal - consumed;
         tvCaloriesLeft.setText(String.valueOf(Math.abs(cLeft)));
-        tvEaten.setText("Eaten: " + consumed + " kcal");
+        tvEaten.setText(getString(R.string.eaten_label_placeholder, consumed));
         calorieProgress.setProgress(goalKcal > 0 ? Math.min(100, (int) ((float) consumed / goalKcal * 100)) : 0);
 
         if (cLeft < 0) {
             tvCaloriesLeft.setTextColor(ContextCompat.getColor(this, R.color.macroFat));
-            if (tvLeftLabel != null) tvLeftLabel.setText("kcal over");
+            if (tvLeftLabel != null) tvLeftLabel.setText(getString(R.string.kcal_over_label));
         } else {
             tvCaloriesLeft.setTextColor(ContextCompat.getColor(this, R.color.white));
-            if (tvLeftLabel != null) tvLeftLabel.setText(R.string.kcal_left_label);
+            if (tvLeftLabel != null) tvLeftLabel.setText(getString(R.string.kcal_left_label));
         }
 
-        updateMacroCard(tvProteinValue, pbProtein, cardProtein, p,     goalProtein, "g left", R.color.macroProtein);
-        updateMacroCard(tvCarbsValue,   pbCarbs,   cardCarbs,   carbs, goalCarbs,   "g left", R.color.macroCarbs);
-        updateMacroCard(tvFatValue,     pbFat,     cardFat,     f,     goalFat,     "g left", R.color.macroFat);
+        updateMacroCard(tvProteinValue, pbProtein, cardProtein, p,     goalProtein, getString(R.string.g_left), R.color.macroProtein);
+        updateMacroCard(tvCarbsValue,   pbCarbs,   cardCarbs,   carbs, goalCarbs,   getString(R.string.g_left), R.color.macroCarbs);
+        updateMacroCard(tvFatValue,     pbFat,     cardFat,     f,     goalFat,     getString(R.string.g_left), R.color.macroFat);
 
-        tvWaterValue.setText(String.format(Locale.getDefault(), "%.2f / %.1f L", water, goalWater));
+        tvWaterValue.setText(getString(R.string.water_progress_format, water, goalWater));
         pbWater.setMax((int) (goalWater * 100));
         pbWater.setProgress((int) (water * 100));
 
-        tvSleepValue.setText(String.format(Locale.getDefault(), "%.1f / %.1f hrs", sleep, goalSleep));
+        tvSleepValue.setText(getString(R.string.sleep_progress_format, sleep, goalSleep));
         pbSleep.setMax((int) (goalSleep * 10));
         pbSleep.setProgress((int) (sleep * 10));
     }
@@ -285,7 +276,7 @@ public class HomeDashboardActivity extends AppCompatActivity {
         if (consumed > goal) {
             card.setStrokeColor(ContextCompat.getColor(this, R.color.macroFat));
             tv.setTextColor(ContextCompat.getColor(this, R.color.macroFat));
-            tv.setText((int)Math.abs(left) + "g over");
+            tv.setText(getString(R.string.macro_over_placeholder, (int)Math.abs(left)));
         } else {
             card.setStrokeColor(ContextCompat.getColor(this, R.color.mealStroke));
             tv.setTextColor(ContextCompat.getColor(this, colorRes));

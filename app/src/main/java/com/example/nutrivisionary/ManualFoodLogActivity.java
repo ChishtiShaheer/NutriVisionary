@@ -44,10 +44,10 @@ public class ManualFoodLogActivity extends AppCompatActivity {
         setContentView(R.layout.activity_manual_food_log);
 
         mealType = getIntent().getStringExtra("mealType");
-        if (mealType == null) mealType = "Snacks";
+        if (mealType == null) mealType = getString(R.string.snacks);
 
         TextView tvTitle = findViewById(R.id.tvLogTitle);
-        tvTitle.setText(String.format("Log %s", mealType));
+        tvTitle.setText(getString(R.string.log_to_meal, mealType));
 
         findViewById(R.id.btnBack).setOnClickListener(v -> finish());
 
@@ -103,7 +103,7 @@ public class ManualFoodLogActivity extends AppCompatActivity {
     private void logFood(FoodItem food) {
         String uid = FirebaseAuth.getInstance().getUid();
         if (uid == null) {
-            Toast.makeText(this, "Not logged in", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, getString(R.string.not_logged), Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -125,11 +125,11 @@ public class ManualFoodLogActivity extends AppCompatActivity {
                 .set(update, SetOptions.merge())
                 .addOnSuccessListener(aVoid -> {
                     setResult(RESULT_OK);
-                    Toast.makeText(ManualFoodLogActivity.this, food.name + " added successfully!", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(ManualFoodLogActivity.this, getString(R.string.logged_to_meal, food.name, mealType), Toast.LENGTH_SHORT).show();
                     finish();
                 })
                 .addOnFailureListener(e -> {
-                    Toast.makeText(ManualFoodLogActivity.this, "Log failed. Please try again.", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(ManualFoodLogActivity.this, getString(R.string.failed_to_log) + e.getMessage(), Toast.LENGTH_SHORT).show();
                 });
     }
 
@@ -158,7 +158,7 @@ public class ManualFoodLogActivity extends AppCompatActivity {
             FoodItem item = items.get(position);
             holder.tvName.setText(item.name);
             holder.tvMacros.setText(String.format(Locale.getDefault(), "P: %.1fg | C: %.1fg | F: %.1fg", item.protein, item.carbs, item.fat));
-            holder.tvKcal.setText(String.format(Locale.getDefault(), "%d kcal", item.kcal));
+            holder.tvKcal.setText(getString(R.string.unit_kcal, item.kcal));
             
             holder.btnQuickAdd.setOnClickListener(v -> logFood(item));
             holder.itemView.setOnClickListener(v -> logFood(item));

@@ -48,46 +48,36 @@ import java.util.concurrent.Executors;
 
 public class ScanFoodActivity extends AppCompatActivity {
 
-    private static final String TAG             = "ScanFoodActivity";
-    private static final int    CAMERA_PERM_CODE = 10;
+    private static final String TAG = "ScanFoodActivity";
+    private static final int CAMERA_PERM_CODE = 10;
 
-    // Views
-    private PreviewView          viewFinder;
-    private ImageView            ivCapturedImage;
-    private View                 btnBack, viewfinderFrame;
+    private PreviewView viewFinder;
+    private ImageView ivCapturedImage;
+    private View btnBack, viewfinderFrame;
     private FloatingActionButton fabCapture;
-    private MaterialButton       btnRetake, btnAnalyze, btnLogFood;
-    private LinearLayout         layoutProcessing;
-    private MaterialCardView     layoutResult;
-    private TextView             tvInstruction;
-    private TextView             tvResultFoodName, tvResultCalories,
+    private MaterialButton btnRetake, btnAnalyze, btnLogFood;
+    private LinearLayout layoutProcessing;
+    private MaterialCardView layoutResult;
+    private TextView tvInstruction;
+    private TextView tvResultFoodName, tvResultCalories,
             tvResultProtein, tvResultCarbs,
             tvResultFat, tvResultDetails;
 
-    // Camera
-    private ImageCapture          imageCapture;
-    private ExecutorService       cameraExecutor;
+    private ImageCapture imageCapture;
+    private ExecutorService cameraExecutor;
     private ProcessCameraProvider cameraProvider;
-    private Bitmap                capturedBitmap;
+    private Bitmap capturedBitmap;
 
-    // Firebase
-    private FirebaseAuth      mAuth;
+    private FirebaseAuth mAuth;
     private FirebaseFirestore db;
 
-    // Last analysis result
-    private String lastResultName    = "";
-    private double lastResultKcal    = 0;
+    private String lastResultName = "";
+    private double lastResultKcal = 0;
     private double lastResultProtein = 0;
-    private double lastResultCarbs   = 0;
-    private double lastResultFat     = 0;
+    private double lastResultCarbs = 0;
+    private double lastResultFat = 0;
 
-    // mealType MUST keep original casing ("Breakfast","Lunch","Dinner","Snacks")
-    // because Firestore fields are "foods_Breakfast" etc.
     private String mealType = "Snacks";
-
-    // ─────────────────────────────────────────────────────────────
-    // LIFECYCLE
-    // ─────────────────────────────────────────────────────────────
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -95,7 +85,7 @@ public class ScanFoodActivity extends AppCompatActivity {
         setContentView(R.layout.activity_scan_food);
 
         mAuth = FirebaseAuth.getInstance();
-        db    = FirebaseFirestore.getInstance();
+        db = FirebaseFirestore.getInstance();
 
         String extra = getIntent().getStringExtra("mealType");
         if (extra != null && !extra.isEmpty()) mealType = extra;
@@ -110,45 +100,37 @@ public class ScanFoodActivity extends AppCompatActivity {
         cameraExecutor = Executors.newSingleThreadExecutor();
     }
 
-    // ─────────────────────────────────────────────────────────────
-    // VIEWS
-    // ─────────────────────────────────────────────────────────────
-
     private void bindViews() {
-        viewFinder       = findViewById(R.id.viewFinder);
-        ivCapturedImage  = findViewById(R.id.ivCapturedImage);
-        fabCapture       = findViewById(R.id.fabCapture);
-        btnRetake        = findViewById(R.id.btnRetake);
-        btnAnalyze       = findViewById(R.id.btnAnalyze);
-        btnLogFood       = findViewById(R.id.btnLogFood);
+        viewFinder = findViewById(R.id.viewFinder);
+        ivCapturedImage = findViewById(R.id.ivCapturedImage);
+        fabCapture = findViewById(R.id.fabCapture);
+        btnRetake = findViewById(R.id.btnRetake);
+        btnAnalyze = findViewById(R.id.btnAnalyze);
+        btnLogFood = findViewById(R.id.btnLogFood);
         layoutProcessing = findViewById(R.id.layoutProcessing);
-        layoutResult     = findViewById(R.id.layoutResult);
-        btnBack          = findViewById(R.id.btnBack);
-        viewfinderFrame  = findViewById(R.id.viewfinderFrame);
-        tvInstruction    = findViewById(R.id.tvInstruction);
+        layoutResult = findViewById(R.id.layoutResult);
+        btnBack = findViewById(R.id.btnBack);
+        viewfinderFrame = findViewById(R.id.viewfinderFrame);
+        tvInstruction = findViewById(R.id.tvInstruction);
 
         tvResultFoodName = findViewById(R.id.tvResultFoodName);
         tvResultCalories = findViewById(R.id.tvResultCalories);
-        tvResultProtein  = findViewById(R.id.tvResultProtein);
-        tvResultCarbs    = findViewById(R.id.tvResultCarbs);
-        tvResultFat      = findViewById(R.id.tvResultFat);
-        tvResultDetails  = findViewById(R.id.tvResultDetails);
+        tvResultProtein = findViewById(R.id.tvResultProtein);
+        tvResultCarbs = findViewById(R.id.tvResultCarbs);
+        tvResultFat = findViewById(R.id.tvResultFat);
+        tvResultDetails = findViewById(R.id.tvResultDetails);
     }
 
     private void setupClickListeners() {
-        if (btnBack    != null) btnBack.setOnClickListener(v  -> finish());
+        if (btnBack != null) btnBack.setOnClickListener(v -> finish());
         if (fabCapture != null) fabCapture.setOnClickListener(v -> takePhoto());
-        if (btnRetake  != null) btnRetake.setOnClickListener(v  -> resetCamera());
+        if (btnRetake != null) btnRetake.setOnClickListener(v -> resetCamera());
         if (btnAnalyze != null) btnAnalyze.setOnClickListener(v -> startAnalysis());
         if (btnLogFood != null) {
-            btnLogFood.setText(String.format("Log to %s", mealType));
+            btnLogFood.setText(getString(R.string.log_to_meal, mealType));
             btnLogFood.setOnClickListener(v -> logFoodToFirebase());
         }
     }
-
-    // ─────────────────────────────────────────────────────────────
-    // CAMERA
-    // ─────────────────────────────────────────────────────────────
 
     private void startCamera() {
         ListenableFuture<ProcessCameraProvider> future =
@@ -165,7 +147,6 @@ public class ScanFoodActivity extends AppCompatActivity {
                 cameraProvider.bindToLifecycle(
                         this, CameraSelector.DEFAULT_BACK_CAMERA, preview, imageCapture);
             } catch (ExecutionException | InterruptedException e) {
-                Log.e(TAG, "Camera bind error", e);
                 Toast.makeText(this, "Camera error: " + e.getMessage(), Toast.LENGTH_LONG).show();
             }
         }, ContextCompat.getMainExecutor(this));
@@ -173,7 +154,7 @@ public class ScanFoodActivity extends AppCompatActivity {
 
     private void takePhoto() {
         if (imageCapture == null) {
-            Toast.makeText(this, "Camera not ready", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, getString(R.string.camera_not_ready), Toast.LENGTH_SHORT).show();
             return;
         }
         imageCapture.takePicture(ContextCompat.getMainExecutor(this),
@@ -186,9 +167,8 @@ public class ScanFoodActivity extends AppCompatActivity {
                     }
                     @Override
                     public void onError(@NonNull ImageCaptureException e) {
-                        Log.e(TAG, "Capture error", e);
                         Toast.makeText(ScanFoodActivity.this,
-                                "Capture failed: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                                getString(R.string.capture_failed) + e.getMessage(), Toast.LENGTH_SHORT).show();
                     }
                 });
     }
@@ -208,7 +188,7 @@ public class ScanFoodActivity extends AppCompatActivity {
         ivCapturedImage.setVisibility(View.VISIBLE);
         viewFinder.setVisibility(View.INVISIBLE);
         if (viewfinderFrame != null) viewfinderFrame.setVisibility(View.GONE);
-        if (tvInstruction   != null) tvInstruction.setVisibility(View.GONE);
+        if (tvInstruction != null) tvInstruction.setVisibility(View.GONE);
         fabCapture.setVisibility(View.GONE);
         btnRetake.setVisibility(View.VISIBLE);
         btnAnalyze.setVisibility(View.VISIBLE);
@@ -223,9 +203,9 @@ public class ScanFoodActivity extends AppCompatActivity {
 
         ivCapturedImage.setVisibility(View.GONE);
         viewFinder.setVisibility(View.VISIBLE);
-        if (viewfinderFrame  != null) viewfinderFrame.setVisibility(View.VISIBLE);
-        if (tvInstruction    != null) tvInstruction.setVisibility(View.VISIBLE);
-        if (layoutResult     != null) layoutResult.setVisibility(View.GONE);
+        if (viewfinderFrame != null) viewfinderFrame.setVisibility(View.VISIBLE);
+        if (tvInstruction != null) tvInstruction.setVisibility(View.VISIBLE);
+        if (layoutResult != null) layoutResult.setVisibility(View.GONE);
         if (layoutProcessing != null) layoutProcessing.setVisibility(View.GONE);
         fabCapture.setVisibility(View.VISIBLE);
         btnRetake.setVisibility(View.GONE);
@@ -235,22 +215,16 @@ public class ScanFoodActivity extends AppCompatActivity {
         startCamera();
     }
 
-    // ─────────────────────────────────────────────────────────────
-    // ANALYSIS — via GeminiClient (Volley)
-    // ─────────────────────────────────────────────────────────────
-
     private void startAnalysis() {
         if (capturedBitmap == null) {
-            Toast.makeText(this, "No image captured", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, getString(R.string.no_image_captured), Toast.LENGTH_SHORT).show();
             return;
         }
         btnRetake.setEnabled(false);
         btnAnalyze.setEnabled(false);
         if (layoutProcessing != null) layoutProcessing.setVisibility(View.VISIBLE);
 
-        // Prompt: demand pure JSON, no markdown, exact keys
-        String prompt =
-                "You are a nutrition expert. Identify the food in this image. "
+        String prompt = "You are a nutrition expert. Identify the food in this image. "
                         + "Return ONLY a raw JSON object — no markdown, no backticks, no extra text. "
                         + "Use exactly these keys:\n"
                         + "{\"name\": string, \"calories\": integer, \"protein_g\": number, "
@@ -264,13 +238,11 @@ public class ScanFoodActivity extends AppCompatActivity {
                 new GeminiClient.GeminiCallback() {
                     @Override
                     public void onSuccess(String jsonText) {
-                        // jsonText is already the raw text from the model
                         handleVisionResult(jsonText);
                     }
 
                     @Override
                     public void onError(int code, String message) {
-                        Log.e(TAG, "Vision error " + code + ": " + message);
                         hideProcessing();
                         Toast.makeText(ScanFoodActivity.this, message, Toast.LENGTH_LONG).show();
                     }
@@ -280,36 +252,31 @@ public class ScanFoodActivity extends AppCompatActivity {
     private void handleVisionResult(String rawText) {
         hideProcessing();
         try {
-            // Extract the JSON object from the text (strips any residual markdown)
             String jsonStr = extractJsonObject(rawText);
-            Log.d(TAG, "Parsed JSON: " + jsonStr);
-
             JSONObject result = new JSONObject(jsonStr);
-            lastResultName    = result.optString("name",        "Unknown Food");
-            lastResultKcal    = result.optDouble("calories",     0);
-            lastResultProtein = result.optDouble("protein_g",    0);
-            lastResultCarbs   = result.optDouble("carbs_g",      0);
-            lastResultFat     = result.optDouble("fat_g",        0);
-            String desc       = result.optString("description", "No details available.");
+            lastResultName = result.optString("name", "Unknown Food");
+            lastResultKcal = result.optDouble("calories", 0);
+            lastResultProtein = result.optDouble("protein_g", 0);
+            lastResultCarbs = result.optDouble("carbs_g", 0);
+            lastResultFat = result.optDouble("fat_g", 0);
+            String desc = result.optString("description", getString(R.string.no_details));
 
             if (tvResultFoodName != null) tvResultFoodName.setText(lastResultName);
             if (tvResultCalories != null)
-                tvResultCalories.setText(String.format(Locale.getDefault(), "%d kcal", (int) lastResultKcal));
-            if (tvResultProtein  != null)
-                tvResultProtein.setText(String.format(Locale.getDefault(), "%.1fg", lastResultProtein));
-            if (tvResultCarbs    != null)
-                tvResultCarbs.setText(String.format(Locale.getDefault(), "%.1fg", lastResultCarbs));
-            if (tvResultFat      != null)
-                tvResultFat.setText(String.format(Locale.getDefault(), "%.1fg", lastResultFat));
-            if (tvResultDetails  != null) tvResultDetails.setText(desc);
+                tvResultCalories.setText(getString(R.string.unit_kcal, (int) lastResultKcal));
+            if (tvResultProtein != null)
+                tvResultProtein.setText(getString(R.string.unit_gram, lastResultProtein));
+            if (tvResultCarbs != null)
+                tvResultCarbs.setText(getString(R.string.unit_gram, lastResultCarbs));
+            if (tvResultFat != null)
+                tvResultFat.setText(getString(R.string.unit_gram, lastResultFat));
+            if (tvResultDetails != null) tvResultDetails.setText(desc);
 
             if (layoutResult != null) layoutResult.setVisibility(View.VISIBLE);
-            if (btnAnalyze   != null) btnAnalyze.setVisibility(View.GONE);
+            if (btnAnalyze != null) btnAnalyze.setVisibility(View.GONE);
 
         } catch (Exception e) {
-            Log.e(TAG, "JSON parse error. Raw: " + rawText, e);
-            Toast.makeText(this,
-                    "Could not read food data. Try a clearer photo.", Toast.LENGTH_LONG).show();
+            Toast.makeText(this, getString(R.string.parse_error), Toast.LENGTH_LONG).show();
             if (btnAnalyze != null) btnAnalyze.setEnabled(true);
         }
     }
@@ -319,71 +286,46 @@ public class ScanFoodActivity extends AppCompatActivity {
         btnRetake.setEnabled(true);
     }
 
-    /**
-     * Extracts the first complete {...} JSON object from a string
-     * that may contain surrounding markdown or explanatory text.
-     */
     private String extractJsonObject(String text) throws Exception {
         int start = text.indexOf('{');
-        int end   = text.lastIndexOf('}');
+        int end = text.lastIndexOf('}');
         if (start == -1 || end == -1 || end <= start)
-            throw new Exception("No JSON object found in: " + text);
+            throw new Exception("No JSON object found");
         return text.substring(start, end + 1);
     }
 
-    // ─────────────────────────────────────────────────────────────
-    // LOG TO FIREBASE — atomic FieldValue.increment, no pre-fetch
-    // ─────────────────────────────────────────────────────────────
-
     private void logFoodToFirebase() {
-        if (mAuth.getCurrentUser() == null) {
-            Toast.makeText(this, "Not signed in", Toast.LENGTH_SHORT).show();
-            return;
-        }
-        if (lastResultKcal == 0 && lastResultName.isEmpty()) {
-            Toast.makeText(this, "No food result to log", Toast.LENGTH_SHORT).show();
-            return;
-        }
+        if (mAuth.getCurrentUser() == null) return;
+        if (lastResultKcal == 0 && lastResultName.isEmpty()) return;
 
         btnLogFood.setEnabled(false);
 
-        String uid       = mAuth.getCurrentUser().getUid();
-        String today     = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date());
+        String uid = mAuth.getCurrentUser().getUid();
+        String today = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date());
 
-        // IMPORTANT: do NOT call .toLowerCase() — Firestore fields are case-sensitive
-        // and HomeDashboard reads "foods_Breakfast", "foods_Lunch" etc.
         String mealField = "foods_" + mealType;
-        String entry     = String.format(Locale.getDefault(),
-                "%s (%d kcal)", lastResultName, (int) lastResultKcal);
+        String entry = String.format(Locale.getDefault(), "%s (%d kcal)", lastResultName, (int) lastResultKcal);
 
         Map<String, Object> update = new HashMap<>();
-        update.put("consumedKcal",    FieldValue.increment(lastResultKcal));
+        update.put("consumedKcal", FieldValue.increment(lastResultKcal));
         update.put("consumedProtein", FieldValue.increment(lastResultProtein));
-        update.put("consumedCarbs",   FieldValue.increment(lastResultCarbs));
-        update.put("consumedFat",     FieldValue.increment(lastResultFat));
-        update.put(mealField,         FieldValue.arrayUnion(entry));
-        update.put("lastUpdated",     FieldValue.serverTimestamp());
+        update.put("consumedCarbs", FieldValue.increment(lastResultCarbs));
+        update.put("consumedFat", FieldValue.increment(lastResultFat));
+        update.put(mealField, FieldValue.arrayUnion(entry));
+        update.put("lastUpdated", FieldValue.serverTimestamp());
 
         db.collection("users").document(uid)
                 .collection("logs").document(today)
                 .set(update, SetOptions.merge())
                 .addOnSuccessListener(a -> {
-                    Toast.makeText(this,
-                            lastResultName + " logged to " + mealType + " ✓",
-                            Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, getString(R.string.logged_to_meal, lastResultName, mealType), Toast.LENGTH_SHORT).show();
                     finish();
                 })
                 .addOnFailureListener(e -> {
-                    Log.e(TAG, "Firestore write failed", e);
                     btnLogFood.setEnabled(true);
-                    Toast.makeText(this,
-                            "Failed to log: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                    Toast.makeText(this, getString(R.string.failed_to_log) + e.getMessage(), Toast.LENGTH_LONG).show();
                 });
     }
-
-    // ─────────────────────────────────────────────────────────────
-    // PERMISSIONS
-    // ─────────────────────────────────────────────────────────────
 
     private boolean allPermissionsGranted() {
         return ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
@@ -391,22 +333,16 @@ public class ScanFoodActivity extends AppCompatActivity {
     }
 
     @Override
-    public void onRequestPermissionsResult(int code,
-                                           @NonNull String[] perms, @NonNull int[] results) {
+    public void onRequestPermissionsResult(int code, @NonNull String[] perms, @NonNull int[] results) {
         super.onRequestPermissionsResult(code, perms, results);
         if (code == CAMERA_PERM_CODE) {
             if (allPermissionsGranted()) startCamera();
             else {
-                Toast.makeText(this,
-                        "Camera permission required", Toast.LENGTH_LONG).show();
+                Toast.makeText(this, getString(R.string.camera_perm_required), Toast.LENGTH_LONG).show();
                 finish();
             }
         }
     }
-
-    // ─────────────────────────────────────────────────────────────
-    // LIFECYCLE
-    // ─────────────────────────────────────────────────────────────
 
     @Override
     protected void onDestroy() {

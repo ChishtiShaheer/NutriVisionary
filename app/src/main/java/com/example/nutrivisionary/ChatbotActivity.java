@@ -4,7 +4,6 @@ import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.os.Bundle;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -35,9 +34,6 @@ import java.util.Locale;
 
 public class ChatbotActivity extends AppCompatActivity {
 
-    private static final String TAG = "ChatbotActivity";
-
-    // Chip [label, question] pairs
     private static final String[][] CHIPS = {
             {"🥗 Meal Suggestion",   "Suggest a healthy balanced meal for today based on my goals"},
             {"💪 High Protein",       "What are the best high protein foods I should eat?"},
@@ -59,17 +55,12 @@ public class ChatbotActivity extends AppCompatActivity {
 
     private boolean isLoading = false;
 
-    // User profile (populated from Firestore)
     private String userName    = "there";
     private int    goalKcal    = 2000;
     private double goalProtein = 100, goalCarbs = 200, goalFat = 70;
     private double goalWater   = 2.0, goalSleep = 8.0;
     private double userWeight  = 0;
     private String userGoal    = "maintain weight";
-
-    // ─────────────────────────────────────────────────────────────
-    // LIFECYCLE
-    // ─────────────────────────────────────────────────────────────
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -80,10 +71,6 @@ public class ChatbotActivity extends AppCompatActivity {
         buildChips();
     }
 
-    // ─────────────────────────────────────────────────────────────
-    // VIEWS
-    // ─────────────────────────────────────────────────────────────
-
     private void initViews() {
         rvMessages    = findViewById(R.id.rvMessages);
         etMessage     = findViewById(R.id.etMessage);
@@ -92,7 +79,6 @@ public class ChatbotActivity extends AppCompatActivity {
         chipContainer = findViewById(R.id.chipContainer);
         emptyState    = findViewById(R.id.emptyState);
 
-        // stackFromEnd = newest messages appear at bottom
         LinearLayoutManager llm = new LinearLayoutManager(this);
         llm.setStackFromEnd(true);
         rvMessages.setLayoutManager(llm);
@@ -116,7 +102,6 @@ public class ChatbotActivity extends AppCompatActivity {
             return false;
         });
 
-        // Empty-state suggestion cards
         setCard(R.id.suggestionA, "Suggest a healthy meal for today based on my goals");
         setCard(R.id.suggestionB, "How much water should I drink daily?");
         setCard(R.id.suggestionC, "What are the best high protein foods?");
@@ -127,10 +112,6 @@ public class ChatbotActivity extends AppCompatActivity {
         View v = findViewById(id);
         if (v != null) v.setOnClickListener(x -> submitText(question));
     }
-
-    // ─────────────────────────────────────────────────────────────
-    // USER CONTEXT
-    // ─────────────────────────────────────────────────────────────
 
     private void loadUserContext() {
         String uid = FirebaseAuth.getInstance().getUid();
@@ -160,8 +141,7 @@ public class ChatbotActivity extends AppCompatActivity {
     }
 
     private String buildSystemPrompt() {
-        return "You are NutriAI, a friendly and knowledgeable nutrition assistant "
-                + "inside the NutriVisionary health app.\n\n"
+        return "You are NutriAI, a friendly and knowledgeable nutrition assistant inside the NutriVisionary health app.\n\n"
                 + "User profile:\n"
                 + "• Name: " + userName + "\n"
                 + "• Calorie goal: " + goalKcal + " kcal/day\n"
@@ -173,14 +153,10 @@ public class ChatbotActivity extends AppCompatActivity {
                 + "Rules:\n"
                 + "- Address the user as " + userName + ".\n"
                 + "- 2-3 short paragraphs max. Be warm and actionable.\n"
-                + "- Plain text only — no markdown (no ** ## --- *).\n"
+                + "- Plain text only — no markdown.\n"
                 + "- Use • for any bullet lists.\n"
                 + "- For medical questions recommend a healthcare provider.";
     }
-
-    // ─────────────────────────────────────────────────────────────
-    // CHIPS
-    // ─────────────────────────────────────────────────────────────
 
     private void buildChips() {
         if (chipContainer == null) return;
@@ -216,10 +192,6 @@ public class ChatbotActivity extends AppCompatActivity {
         return card;
     }
 
-    // ─────────────────────────────────────────────────────────────
-    // SEND
-    // ─────────────────────────────────────────────────────────────
-
     private void sendMessage() {
         String text = etMessage.getText().toString().trim();
         if (TextUtils.isEmpty(text)) return;
@@ -237,10 +209,9 @@ public class ChatbotActivity extends AppCompatActivity {
         isLoading = true;
         showTyping(true);
 
-        // Delegate to GeminiClient (Volley-based)
         GeminiClient.getInstance(this).sendChatRequest(
                 buildSystemPrompt(),
-                messages,                      // full history including new message
+                messages,
                 new GeminiClient.GeminiCallback() {
                     @Override
                     public void onSuccess(String reply) {
@@ -254,16 +225,11 @@ public class ChatbotActivity extends AppCompatActivity {
                     public void onError(int code, String message) {
                         isLoading = false;
                         showTyping(false);
-                        Log.e(TAG, "Gemini error " + code + ": " + message);
                         addMessage(new ChatMessage(message, ChatMessage.TYPE_BOT));
                         scrollToBottom();
                     }
                 });
     }
-
-    // ─────────────────────────────────────────────────────────────
-    // TYPING INDICATOR
-    // ─────────────────────────────────────────────────────────────
 
     private AnimatorSet typingAnimator;
 
@@ -296,10 +262,6 @@ public class ChatbotActivity extends AppCompatActivity {
         return a;
     }
 
-    // ─────────────────────────────────────────────────────────────
-    // HELPERS
-    // ─────────────────────────────────────────────────────────────
-
     private void addMessage(ChatMessage msg) {
         messages.add(msg);
         adapter.notifyItemInserted(messages.size() - 1);
@@ -313,14 +275,14 @@ public class ChatbotActivity extends AppCompatActivity {
 
     private void confirmClearChat() {
         new AlertDialog.Builder(this)
-                .setTitle("Clear Chat")
-                .setMessage("Delete all chat history?")
-                .setPositiveButton("Clear", (d, w) -> {
+                .setTitle(getString(R.string.clear_chat))
+                .setMessage(getString(R.string.delete_chat_history))
+                .setPositiveButton(getString(R.string.clear), (d, w) -> {
                     messages.clear();
                     adapter.notifyDataSetChanged();
                     if (emptyState != null) emptyState.setVisibility(View.VISIBLE);
                 })
-                .setNegativeButton("Cancel", null)
+                .setNegativeButton(getString(R.string.cancel), null)
                 .show();
     }
 
@@ -334,10 +296,6 @@ public class ChatbotActivity extends AppCompatActivity {
         return Math.round(dp * getResources().getDisplayMetrics().density);
     }
 
-    // ─────────────────────────────────────────────────────────────
-    // DATA MODEL
-    // ─────────────────────────────────────────────────────────────
-
     public static class ChatMessage {
         public static final int TYPE_USER = 0, TYPE_BOT = 1;
         public final String text, time;
@@ -348,10 +306,6 @@ public class ChatbotActivity extends AppCompatActivity {
             this.time = new SimpleDateFormat("h:mm a", Locale.getDefault()).format(new Date());
         }
     }
-
-    // ─────────────────────────────────────────────────────────────
-    // ADAPTER
-    // ─────────────────────────────────────────────────────────────
 
     private static class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.VH> {
         private final List<ChatMessage> items;
@@ -374,7 +328,6 @@ public class ChatbotActivity extends AppCompatActivity {
             if (h.tvMsg  != null) h.tvMsg.setText(m.text);
             if (h.tvTime != null) h.tvTime.setText(m.time);
 
-            // Slide-up entrance animation
             h.itemView.setTranslationY(60f);
             h.itemView.setAlpha(0f);
             h.itemView.animate()

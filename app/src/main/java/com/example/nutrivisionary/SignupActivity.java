@@ -4,7 +4,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.util.Log;
 import android.util.Patterns;
 import android.widget.Button;
 import android.widget.EditText;
@@ -20,7 +19,6 @@ import java.util.Map;
 
 public class SignupActivity extends AppCompatActivity {
 
-    private static final String TAG = "SignupActivity";
     private EditText nameField, emailField, passwordField;
     private Button signupBtn;
     private FirebaseAuth mAuth;
@@ -45,30 +43,28 @@ public class SignupActivity extends AppCompatActivity {
             String password = passwordField.getText().toString().trim();
 
             if (name.isEmpty() || email.isEmpty() || password.isEmpty()) {
-                Toast.makeText(SignupActivity.this, "Fields cannot be empty", Toast.LENGTH_SHORT).show();
+                Toast.makeText(SignupActivity.this, getString(R.string.fill_fields), Toast.LENGTH_SHORT).show();
                 return;
             }
             if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-                Toast.makeText(SignupActivity.this, "Invalid email format", Toast.LENGTH_SHORT).show();
+                Toast.makeText(SignupActivity.this, getString(R.string.invalid_email), Toast.LENGTH_SHORT).show();
                 return;
             }
             if (password.length() < 6) {
-                Toast.makeText(SignupActivity.this, "Password must be at least 6 characters", Toast.LENGTH_SHORT).show();
+                Toast.makeText(SignupActivity.this, getString(R.string.password_length), Toast.LENGTH_SHORT).show();
                 return;
             }
 
             signupBtn.setEnabled(false);
-            signupBtn.setText("Creating account...");
+            signupBtn.setText(getString(R.string.creating_account));
 
             mAuth.createUserWithEmailAndPassword(email, password)
                     .addOnSuccessListener(SignupActivity.this, authResult -> {
-                        // FIX: addOnSuccessListener(activity, ...) binds to Activity lifecycle
-                        // so callback is guaranteed on main thread
                         String uid = authResult.getUser().getUid();
                         saveUserToFirestore(uid, name, email);
                     })
                     .addOnFailureListener(SignupActivity.this, e -> {
-                        Toast.makeText(SignupActivity.this, "Registration failed: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                        Toast.makeText(SignupActivity.this, getString(R.string.reg_failed) + e.getMessage(), Toast.LENGTH_LONG).show();
                         signupBtn.setEnabled(true);
                         signupBtn.setText(getString(R.string.signUpBtn));
                     });
@@ -85,8 +81,7 @@ public class SignupActivity extends AppCompatActivity {
         db.collection("users").document(uid)
                 .set(userMap)
                 .addOnSuccessListener(SignupActivity.this, unused -> {
-                    // FIX: use Activity context (SignupActivity.this) for Toast, never getApplicationContext()
-                    Toast.makeText(SignupActivity.this, "Account created successfully!", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(SignupActivity.this, getString(R.string.acc_created), Toast.LENGTH_SHORT).show();
 
                     signupBtn.setEnabled(true);
                     signupBtn.setText(getString(R.string.signUpBtn));
@@ -101,15 +96,13 @@ public class SignupActivity extends AppCompatActivity {
                             .putBoolean("isLoggedIn", true)
                             .apply();
 
-                    // Navigate to profile setup — do NOT call mAuth.signOut() here
                     Intent intent = new Intent(SignupActivity.this, ProfileSetupActivity.class);
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                     startActivity(intent);
                     finish();
                 })
                 .addOnFailureListener(SignupActivity.this, e -> {
-                    Log.e(TAG, "Firestore error: " + e.getMessage());
-                    Toast.makeText(SignupActivity.this, "Failed to save profile: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                    Toast.makeText(SignupActivity.this, getString(R.string.error_saving), Toast.LENGTH_LONG).show();
                     signupBtn.setEnabled(true);
                     signupBtn.setText(getString(R.string.signUpBtn));
                 });

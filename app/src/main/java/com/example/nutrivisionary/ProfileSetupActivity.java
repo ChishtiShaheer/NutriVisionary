@@ -6,7 +6,6 @@ import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
-import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 import androidx.activity.result.ActivityResultLauncher;
@@ -129,12 +128,12 @@ public class ProfileSetupActivity extends AppCompatActivity {
     private void saveProfileToFirebase() {
         FirebaseUser user = mAuth.getCurrentUser();
         if (user == null) {
-            Toast.makeText(ProfileSetupActivity.this, "Session expired. Log in again.", Toast.LENGTH_SHORT).show();
+            Toast.makeText(ProfileSetupActivity.this, getString(R.string.session_expired), Toast.LENGTH_SHORT).show();
             return;
         }
 
         saveProfileBtn.setEnabled(false);
-        saveProfileBtn.setText("Saving...");
+        saveProfileBtn.setText(getString(R.string.saving));
 
         try {
             String name = etName.getText().toString().trim();
@@ -150,19 +149,19 @@ public class ProfileSetupActivity extends AppCompatActivity {
             String goal = getSelectedChipText(cgGoal);
             String dietaryPref = getSelectedChipText(cgDiet);
 
-            double bmr = (gender.equalsIgnoreCase("Male")) ?
+            double bmr = (gender.equalsIgnoreCase(getString(R.string.gender_male))) ?
                     (10 * weight) + (6.25 * height) - (5 * age) + 5 :
                     (10 * weight) + (6.25 * height) - (5 * age) - 161;
 
             double multiplier = 1.2;
-            if (activityLevel.contains("Moderate")) multiplier = 1.55;
-            else if (activityLevel.contains("Active")) multiplier = 1.725;
-            else if (activityLevel.contains("Athlete")) multiplier = 1.9;
+            if (activityLevel.contains(getString(R.string.activity_moderate))) multiplier = 1.55;
+            else if (activityLevel.contains(getString(R.string.activity_active))) multiplier = 1.725;
+            else if (activityLevel.contains(getString(R.string.activity_athlete))) multiplier = 1.9;
 
             double tdee = bmr * multiplier;
             int targetCals = (int) tdee;
-            if (goal.contains("Lose")) targetCals -= 500;
-            else if (goal.contains("Gain")) targetCals += 500;
+            if (goal.contains(getString(R.string.goal_lose_short))) targetCals -= 500;
+            else if (goal.contains(getString(R.string.goal_gain_short))) targetCals += 500;
 
             int protein = (int) (weight * 2.0);
             int fat = (int) ((targetCals * 0.25) / 9);
@@ -189,10 +188,6 @@ public class ProfileSetupActivity extends AppCompatActivity {
             db.collection("users").document(user.getUid())
                     .set(profile, SetOptions.merge())
                     .addOnSuccessListener(ProfileSetupActivity.this, unused -> {
-                        // FIX: addOnSuccessListener(activity, ...) — Activity context binding
-                        // guarantees callback runs on main thread and is lifecycle-safe.
-                        // FIX: use ProfileSetupActivity.this for Toast, not getApplicationContext()
-
                         SharedPreferences sharedPref = getSharedPreferences("NutriPrefs", Context.MODE_PRIVATE);
                         sharedPref.edit()
                                 .putString("userName", name)
@@ -200,7 +195,7 @@ public class ProfileSetupActivity extends AppCompatActivity {
                                 .putBoolean("isProfileComplete", true)
                                 .apply();
 
-                        Toast.makeText(ProfileSetupActivity.this, "Profile Saved Successfully!", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(ProfileSetupActivity.this, getString(R.string.profile_saved), Toast.LENGTH_SHORT).show();
 
                         saveProfileBtn.setEnabled(true);
                         saveProfileBtn.setText(getString(R.string.complete_setup));
@@ -211,14 +206,13 @@ public class ProfileSetupActivity extends AppCompatActivity {
                         finish();
                     })
                     .addOnFailureListener(ProfileSetupActivity.this, e -> {
-                        Log.e("ProfileSetup", "Save failed: " + e.getMessage());
-                        Toast.makeText(ProfileSetupActivity.this, "Error saving profile: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                        Toast.makeText(ProfileSetupActivity.this, getString(R.string.error_saving) + e.getMessage(), Toast.LENGTH_LONG).show();
                         saveProfileBtn.setEnabled(true);
                         saveProfileBtn.setText(getString(R.string.complete_setup));
                     });
 
         } catch (NumberFormatException e) {
-            Toast.makeText(ProfileSetupActivity.this, "Please ensure all numbers are valid", Toast.LENGTH_SHORT).show();
+            Toast.makeText(ProfileSetupActivity.this, getString(R.string.invalid_numbers), Toast.LENGTH_SHORT).show();
             saveProfileBtn.setEnabled(true);
             saveProfileBtn.setText(getString(R.string.complete_setup));
         }
@@ -241,14 +235,14 @@ public class ProfileSetupActivity extends AppCompatActivity {
                 etTargetWeight.getText().toString().trim().isEmpty() ||
                 etWaterGoal.getText().toString().trim().isEmpty() ||
                 etSleepGoal.getText().toString().trim().isEmpty()) {
-            Toast.makeText(this, "Please fill all fields", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, getString(R.string.fill_fields), Toast.LENGTH_SHORT).show();
             return false;
         }
         if (cgGender.getCheckedChipId() == View.NO_ID ||
                 cgActivity.getCheckedChipId() == View.NO_ID ||
                 cgGoal.getCheckedChipId() == View.NO_ID ||
                 cgDiet.getCheckedChipId() == View.NO_ID) {
-            Toast.makeText(this, "Please select all preferences", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, getString(R.string.select_preferences), Toast.LENGTH_SHORT).show();
             return false;
         }
         return true;
