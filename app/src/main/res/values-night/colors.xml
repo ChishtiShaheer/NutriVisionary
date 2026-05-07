@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- Backgrounds -->
-    <color name="white">#FFFFFF</color> <!-- Keep as white for text on dark backgrounds -->
+    <color name="white">#FFFFFF</color>
     <color name="screenBackground">#0F172A</color>
     <color name="offWhite">#0F172A</color>
     <color name="darkBackground">#0F172A</color>
@@ -11,13 +11,18 @@
     <color name="softBlueGradientEnd">#0F172A</color>
     <color name="toggleBackground">#334155</color>
     <color name="lightBlue">#1E293B</color>
-    <color name="glassCardFill">#1AFFFFFF</color> <!-- Very subtle white overlay for glass effect in dark mode -->
+    <color name="glassCardFill">#1AFFFFFF</color>
 
     <!-- Text -->
     <color name="darkText">#F8FAFC</color>
     <color name="grayText">#94A3B8</color>
     <color name="slateGray">#94A3B8</color>
     <color name="navyBlue">#F1F5F9</color>
+
+    <!-- Sleep Colors (Night) -->
+    <color name="sleepPrimary">#CE93D8</color> <!-- Lighter purple for dark mode visibility -->
+    <color name="sleepSecondary">#312244</color> <!-- Deep purple for button background -->
+    <color name="sleepText">#E1BEE7</color>
 
     <!-- Strokes and Dividers -->
     <color name="mealStroke">#334155</color>
